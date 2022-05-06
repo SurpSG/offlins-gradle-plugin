@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+    id 'com.sergnat.offlins'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13'
+}
