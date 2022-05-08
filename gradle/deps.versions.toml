@@ -1,0 +1,5 @@
+[libraries]
+apache-commons-io = { module = "commons-io:commons-io", version = "2.11.0" }
+
+[plugins]
+pluginPublish = { id = "com.gradle.publish:plugin-publish-plugin", version = "0.20.0" }
