@@ -1,6 +1,8 @@
 package com.sergnat.offlins
 
+import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
 import com.sergnat.offlins.OfflinsPlugin.Companion.OFFLINS_TASK
+import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,9 +40,26 @@ class OfflinsPluginTest : BaseOfflinsTest() {
 
         // run // assert
         gradleRunner.runTask(OFFLINS_TASK)
-            .assertOfflinsStatusEqualsTo(TaskOutcome.SUCCESS)
+            .assertThatTaskStatusIs(OFFLINS_TASK, TaskOutcome.SUCCESS)
             .assertOutputContainsStrings(*expectedDependencies)
             .assertOutputContainsStrings("Currently, I do nothing")
+    }
+
+    @Test
+    fun `instrumentClassesOffline task must instrument classes`() {
+        // run // assert
+        gradleRunner
+            .runTask(INSTRUMENT_CLASSES_TASK)
+            .assertThatTaskStatusIs(INSTRUMENT_CLASSES_TASK, TaskOutcome.SUCCESS)
+
+        val instrumentedClassesDir = rootProjectDir.resolve("build/${InstrumentClassesOfflineTask.OUTPUT_DIR_NAME}")
+        assertThat(instrumentedClassesDir)
+            .isDirectoryRecursivelyContaining { file ->
+                file.name.endsWith(".class") // assert directory contains .class files
+            }
+            .isDirectoryRecursivelyContaining { file ->
+                file.name.endsWith(".class") && isInstrumented(file) // assert .class files are instrumented
+            }
     }
 
     override fun buildTestConfiguration() = TestConfiguration(

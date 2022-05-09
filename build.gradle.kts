@@ -38,5 +38,6 @@ pluginBundle {
 dependencies {
 
     functionalTestImplementation(testDeps.assertj.core)
+    functionalTestImplementation(testDeps.jacoco.core)
 
 }
