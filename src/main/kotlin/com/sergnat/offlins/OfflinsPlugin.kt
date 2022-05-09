@@ -7,8 +7,10 @@ import org.gradle.api.artifacts.Configuration
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
-        project.addConfigurationWithDependency("jacoco", JACOCO_ANT)
-        project.addConfigurationWithDependency("jacocoRuntime", JACOCO_AGENT)
+        project.addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
+        project.addConfigurationWithDependency(JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT)
+
+        project.tasks.create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
 
         project.tasks.create(OFFLINS_TASK).doLast {
             println("Currently, I do nothing")
@@ -28,6 +30,10 @@ class OfflinsPlugin : Plugin<Project> {
 
     companion object {
         const val OFFLINS_TASK = "jacocoReport"
+        const val INSTRUMENT_CLASSES_TASK = "instrumentClassesOffline"
+
+        const val JACOCO_CONFIGURATION = "jacoco"
+        const val JACOCO_RUNTIME_CONFIGURATION = "jacocoRuntime"
     }
 
 }

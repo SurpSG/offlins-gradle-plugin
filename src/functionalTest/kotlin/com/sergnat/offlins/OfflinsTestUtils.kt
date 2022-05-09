@@ -1,6 +1,5 @@
 package com.sergnat.offlins
 
-import com.sergnat.offlins.OfflinsPlugin.Companion.OFFLINS_TASK
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
@@ -42,8 +41,8 @@ fun BuildResult.assertOutputContainsStrings(vararg expectedString: String): Buil
     return this
 }
 
-fun BuildResult.assertOfflinsStatusEqualsTo(status: TaskOutcome): BuildResult {
-    assertThat(task(":$OFFLINS_TASK"))
+fun BuildResult.assertThatTaskStatusIs(taskName: String, status: TaskOutcome): BuildResult {
+    assertThat(task(":$taskName"))
         .isNotNull
         .extracting { it?.outcome }
         .isEqualTo(status)
