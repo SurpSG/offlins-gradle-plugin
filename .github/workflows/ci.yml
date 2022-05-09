@@ -7,7 +7,7 @@ name: CI
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
   pull_request:
     branches:
       - '*'
@@ -37,24 +37,25 @@ jobs:
       - name: Build & Test
         run: ./gradlew check --parallel
 
-#      - name: Add test results to PR
-#        uses: EnricoMi/publish-unit-test-result-action@v1
-#        if: always()
-#        with:
-#          files: "build/test-results/**/*.xml"
-#
-#      - name: Run diff coverage check
-#        continue-on-error: ${{ contains(github.event.pull_request.labels.*.name, 'ignore-diff-coverage') }}
-#        run: ./gradlew diffCoverage -PdiffBase="refs/remotes/origin/$GITHUB_BASE_REF"
-#
-#      - name: Add diff coverage report to PR
-#        id: jacoco
-#        uses: madrapps/jacoco-report@v1.2
-#        if: always()
-#        continue-on-error: true
-#        with:
-#          paths: build/reports/jacoco/diffCoverage/report.xml
-#          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add test results to PR
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        continue-on-error: true
+        with:
+          files: "build/test-results/**/*.xml"
+
+      - name: Run diff coverage check
+        continue-on-error: ${{ contains(github.event.pull_request.labels.*.name, 'ignore-diff-coverage') }}
+        run: ./gradlew diffCoverage -PdiffBase="refs/remotes/origin/$GITHUB_BASE_REF"
+
+      - name: Add diff coverage report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.2
+        if: always()
+        continue-on-error: true
+        with:
+          paths: build/reports/jacoco/diffCoverage/report.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
 #
 #      - name: Upload coverage to Codecov
 #        uses: codecov/codecov-action@v1

@@ -1,0 +1,4 @@
+[libraries]
+kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version = "1.6.20" }
+diffCoverage = { module = "com.github.form-com.diff-coverage-gradle:diff-coverage", version = "0.9.3" }
+jacocoTestkit = { module = "gradle.plugin.pl.droidsonroids.gradle.jacoco:jacoco-gradle-testkit-plugin", version = "1.0.9" }

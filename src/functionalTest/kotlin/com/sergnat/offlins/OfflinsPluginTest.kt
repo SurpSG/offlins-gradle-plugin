@@ -19,14 +19,26 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     @Test
     fun `verify plugin works`() {
         // setup
+        val group = "\${dep.group}"
+        val name = "\${dep.name}"
         buildFile.appendText(
             """
                 println 'hello'
+                println("configurations:")
+        project.configurations.forEach {
+            println(it.name)
+            it.dependencies.forEach { dep ->
+                println("\tdepName: ${group}:${name}")
+            }
+        }
         """.trimIndent()
         )
 
         // run // assert
-        gradleRunner.runTask(OFFLINS_TASK)
+        gradleRunner.withArguments(OFFLINS_TASK, "-i").build()
+            .apply {
+                println(output)
+            }
             .assertOfflinsStatusEqualsTo(TaskOutcome.SUCCESS)
             .assertOutputContainsStrings("Currently, I do nothing")
     }
