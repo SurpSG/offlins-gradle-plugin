@@ -3,50 +3,28 @@ package com.sergnat.offlins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ExternalModuleDependency
-import org.gradle.api.artifacts.dsl.DependencyHandler
 
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
+        project.addConfigurationWithDependency("jacoco", JACOCO_ANT)
+        project.addConfigurationWithDependency("jacocoRuntime", JACOCO_AGENT)
+
         project.tasks.create(OFFLINS_TASK).doLast {
             println("Currently, I do nothing")
         }
-        val jacocoConfiguration: Configuration = project.configurations.create("jacoco")
-        project.dependencies.add(
-            jacocoConfiguration.name,
-            project.dependencies.buildDependency(
-                "org.jacoco",
-                "org.jacoco.ant",
-                "0.8.7",
-                "nodeps"
-            )
-        )
-        val jacocoRuntimeConfiguration: Configuration = project.configurations.create("jacocoRuntime")
-        project.dependencies.add(
-            jacocoRuntimeConfiguration.name,
-            project.dependencies.buildDependency(
-                "org.jacoco",
-                "org.jacoco.agent",
-                "0.8.7",
-                "runtime"
-            )
-        )
     }
 
-    private fun DependencyHandler.buildDependency(
-        group: String,
-        name: String,
-        version: String,
-        classifier: String,
-    ): ExternalModuleDependency = create(
-        mapOf(
-            "group" to group,
-            "name" to name,
-            "version" to version,
-            "classifier" to classifier
+    private fun Project.addConfigurationWithDependency(
+        configurationName: String,
+        jacocoDependency: JacocoDependency
+    ) {
+        val jacocoRuntimeConfiguration: Configuration = configurations.create(configurationName)
+        dependencies.add(
+            jacocoRuntimeConfiguration.name,
+            jacocoDependency.buildDependency(dependencies)
         )
-    ) as ExternalModuleDependency
+    }
 
     companion object {
         const val OFFLINS_TASK = "jacocoReport"
