@@ -17,29 +17,29 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     }
 
     @Test
-    fun `verify plugin works`() {
+    fun `plugin must add jacoco configurations with dependencies`() {
         // setup
-        val group = "\${dep.group}"
-        val name = "\${dep.name}"
-        buildFile.appendText(
-            """
-                println 'hello'
-                println("configurations:")
-        project.configurations.forEach {
-            println(it.name)
-            it.dependencies.forEach { dep ->
-                println("\tdepName: ${group}:${name}")
-            }
-        }
+        val jacocoVersion = "0.8.8"
+        val expectedDependencies = arrayOf(
+            "jacoco:org.jacoco:org.jacoco.ant:${jacocoVersion}",
+            "jacocoRuntime:org.jacoco:org.jacoco.agent:${jacocoVersion}"
+        )
+
+        buildFile.appendText("""
+            project.configurations
+                .forEach { config ->
+                    config.dependencies.forEach { dep ->
+                        def dependencyString = [config.name, dep.group, dep.name, dep.version].join(":")
+                        println dependencyString
+                    }
+                }
         """.trimIndent()
         )
 
         // run // assert
-        gradleRunner.withArguments(OFFLINS_TASK, "-i").build()
-            .apply {
-                println(output)
-            }
+        gradleRunner.runTask(OFFLINS_TASK)
             .assertOfflinsStatusEqualsTo(TaskOutcome.SUCCESS)
+            .assertOutputContainsStrings(*expectedDependencies)
             .assertOutputContainsStrings("Currently, I do nothing")
     }
 
