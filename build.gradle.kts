@@ -2,11 +2,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
-
     `java-gradle-plugin`
     id("com.gradle.plugin-publish") version "0.18.0"
-
     id("com.sergnat.offlins.plugin-test")
+    alias(deps.plugins.detekt)
 }
 
 group = "com.sergnat"

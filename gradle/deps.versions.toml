@@ -3,3 +3,4 @@ apache-commons-io = { module = "commons-io:commons-io", version = "2.11.0" }
 
 [plugins]
 pluginPublish = { id = "com.gradle.publish:plugin-publish-plugin", version = "0.20.0" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version = "1.20.0" }
