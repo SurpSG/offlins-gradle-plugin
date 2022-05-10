@@ -9,24 +9,20 @@ import java.io.File
 
 class OfflinsPlugin : Plugin<Project> {
 
-    override fun apply(project: Project) {
-        with(project) {
-            addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
-            addConfigurationWithDependency(JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT)
+    override fun apply(project: Project): Unit = with(project) {
+        addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
+        addConfigurationWithDependency(JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT)
+        val jacocoInstrumentedConf: Configuration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION)
 
-            with(tasks) {
-                val instrumentClassesTask = create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
-                createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
-
-                create(OFFLINS_TASK).doLast {
-                    println("Currently, I do nothing")
-                }
-            }
+        with(tasks) {
+            val instrumentClassesTask = create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
+            val instrumentedJarTask = createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
+            artifacts.add(jacocoInstrumentedConf.name, instrumentedJarTask)
         }
     }
 
-    private fun TaskContainer.createAssembleInstrumentedJarTask(instrumentedClassesDir: File) {
-        create(ASSEMBLE_INSTRUMENTED_JAR_TASK, Jar::class.java).apply {
+    private fun TaskContainer.createAssembleInstrumentedJarTask(instrumentedClassesDir: File): Jar {
+        return create(ASSEMBLE_INSTRUMENTED_JAR_TASK, Jar::class.java).apply {
             description = "Assemble Jar with instrumented classes"
             dependsOn += INSTRUMENT_CLASSES_TASK
 
@@ -39,15 +35,14 @@ class OfflinsPlugin : Plugin<Project> {
         configurationName: String,
         jacocoDependency: JacocoDependency
     ) {
-        val jacocoRuntimeConfiguration: Configuration = configurations.create(configurationName)
+        val configuration: Configuration = configurations.create(configurationName)
         dependencies.add(
-            jacocoRuntimeConfiguration.name,
+            configuration.name,
             jacocoDependency.buildDependency(dependencies)
         )
     }
 
     companion object {
-        const val OFFLINS_TASK = "jacocoReport"
         const val INSTRUMENT_CLASSES_TASK = "instrumentClassesOffline"
 
         const val ASSEMBLE_INSTRUMENTED_JAR_TASK = "assembleInstrumentedJar"
@@ -55,6 +50,7 @@ class OfflinsPlugin : Plugin<Project> {
 
         const val JACOCO_CONFIGURATION = "jacoco"
         const val JACOCO_RUNTIME_CONFIGURATION = "jacocoRuntime"
+        const val JACOCO_INSTRUMENTED_CONFIGURATION = "jacocoInstrumented"
     }
 
 }

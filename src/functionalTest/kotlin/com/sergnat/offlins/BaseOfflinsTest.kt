@@ -22,9 +22,7 @@ abstract class BaseOfflinsTest {
         rootProjectDir = tempTestDir.copyDirFromResources<BaseOfflinsTest>(configuration.resourceTestProject)
         buildFile = rootProjectDir.resolve(configuration.rootBuildFilePath)
 
-        gradleRunner = buildGradleRunner(rootProjectDir).apply {
-            runTask("test")
-        }
+        gradleRunner = buildGradleRunner(rootProjectDir)
     }
 
     abstract fun buildTestConfiguration(): TestConfiguration

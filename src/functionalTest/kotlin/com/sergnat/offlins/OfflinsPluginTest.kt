@@ -3,7 +3,7 @@ package com.sergnat.offlins
 import com.sergnat.offlins.OfflinsPlugin.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
 import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENTED_JAR_SUFFIX
 import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
-import com.sergnat.offlins.OfflinsPlugin.Companion.OFFLINS_TASK
+import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_INSTRUMENTED_CONFIGURATION
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
@@ -33,8 +33,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
             "jacocoRuntime:org.jacoco:org.jacoco.agent:${jacocoVersion}"
         )
 
-        buildFile.appendText(
-            """
+        buildFile.appendText("""
             project.configurations
                 .forEach { config ->
                     config.dependencies.forEach { dep ->
@@ -42,14 +41,29 @@ class OfflinsPluginTest : BaseOfflinsTest() {
                         println dependencyString
                     }
                 }
-        """.trimIndent()
-        )
+        """.trimIndent())
 
         // run // assert
-        gradleRunner.runTask(OFFLINS_TASK)
-            .assertThatTaskStatusIs(OFFLINS_TASK, TaskOutcome.SUCCESS)
+        gradleRunner.withArguments("tasks", "--dry-run").build()
             .assertOutputContainsStrings(*expectedDependencies)
-            .assertOutputContainsStrings("Currently, I do nothing")
+    }
+
+    @Test
+    fun `plugin must add jacoco instrumented configuration with instrumented jar artifact`() {
+        // setup
+        val markerToken = javaClass.simpleName
+        val expectedArtifact = "$markerToken:$TEST_PROJECT_RESOURCE_NAME-$INSTRUMENTED_JAR_SUFFIX.jar"
+        buildFile.appendText("""
+            configurations.getByName("$JACOCO_INSTRUMENTED_CONFIGURATION")
+                .artifacts.forEach {
+                    def confArtifact = ["$markerToken", it.file.name].join(":")
+                    println confArtifact
+                }
+        """.trimIndent())
+
+        // run // assert
+        gradleRunner.withArguments("tasks", "--dry-run").build()
+            .assertOutputContainsStrings(expectedArtifact)
     }
 
     @Test
@@ -57,6 +71,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         // run // assert
         gradleRunner
             .runTask(INSTRUMENT_CLASSES_TASK)
+            .assertThatTaskStatusIs("classes", TaskOutcome.SUCCESS)
             .assertThatTaskStatusIs(INSTRUMENT_CLASSES_TASK, TaskOutcome.SUCCESS)
 
         val instrumentedClassesDir = rootProjectDir.resolve("build/${InstrumentClassesOfflineTask.OUTPUT_DIR_NAME}")
@@ -78,6 +93,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         // run // assert
         gradleRunner
             .runTask(ASSEMBLE_INSTRUMENTED_JAR_TASK)
+            .assertThatTaskStatusIs(INSTRUMENT_CLASSES_TASK, TaskOutcome.SUCCESS)
             .assertThatTaskStatusIs(ASSEMBLE_INSTRUMENTED_JAR_TASK, TaskOutcome.SUCCESS)
 
         assertThat(expectedJar).isFile
