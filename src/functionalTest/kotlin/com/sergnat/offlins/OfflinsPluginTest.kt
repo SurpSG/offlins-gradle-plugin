@@ -71,6 +71,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         // run // assert
         gradleRunner
             .runTask(INSTRUMENT_CLASSES_TASK)
+            .assertThatTaskStatusIs("classes", TaskOutcome.SUCCESS)
             .assertThatTaskStatusIs(INSTRUMENT_CLASSES_TASK, TaskOutcome.SUCCESS)
 
         val instrumentedClassesDir = rootProjectDir.resolve("build/${InstrumentClassesOfflineTask.OUTPUT_DIR_NAME}")
@@ -92,6 +93,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         // run // assert
         gradleRunner
             .runTask(ASSEMBLE_INSTRUMENTED_JAR_TASK)
+            .assertThatTaskStatusIs(INSTRUMENT_CLASSES_TASK, TaskOutcome.SUCCESS)
             .assertThatTaskStatusIs(ASSEMBLE_INSTRUMENTED_JAR_TASK, TaskOutcome.SUCCESS)
 
         assertThat(expectedJar).isFile
