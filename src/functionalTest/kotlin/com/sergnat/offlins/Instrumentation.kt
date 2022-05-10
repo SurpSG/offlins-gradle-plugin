@@ -8,9 +8,13 @@ import java.io.File
 import java.io.FileInputStream
 
 fun isInstrumented(classfile: File): Boolean {
-    val reader: ClassReader = FileInputStream(classfile).use {
-        InstrSupport.classReaderFor(it.readBytes())
-    }
+    return isInstrumented(
+        FileInputStream(classfile).readBytes()
+    )
+}
+
+fun isInstrumented(classFileContent: ByteArray): Boolean {
+    val reader: ClassReader = InstrSupport.classReaderFor(classFileContent)
     val methods: MutableSet<String> = HashSet()
     reader.accept(object : ClassVisitor(InstrSupport.ASM_API_VERSION) {
         override fun visitMethod(
