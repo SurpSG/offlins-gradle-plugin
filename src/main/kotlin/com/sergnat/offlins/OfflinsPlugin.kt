@@ -11,13 +11,20 @@ class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
         addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
-        addConfigurationWithDependency(JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT)
+        val jacocoRuntimeConf: Configuration = addConfigurationWithDependency(
+            JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT
+        )
         val jacocoInstrumentedConf: Configuration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION)
 
         with(tasks) {
             val instrumentClassesTask = create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
             val instrumentedJarTask = createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
             artifacts.add(jacocoInstrumentedConf.name, instrumentedJarTask)
+
+            TestTasksConfigurator(project, jacocoRuntimeConf).configure(
+                instrumentClassesTask,
+                instrumentedJarTask
+            )
         }
     }
 
@@ -34,12 +41,13 @@ class OfflinsPlugin : Plugin<Project> {
     private fun Project.addConfigurationWithDependency(
         configurationName: String,
         jacocoDependency: JacocoDependency
-    ) {
+    ): Configuration {
         val configuration: Configuration = configurations.create(configurationName)
         dependencies.add(
             configuration.name,
             jacocoDependency.buildDependency(dependencies)
         )
+        return configuration
     }
 
     companion object {
