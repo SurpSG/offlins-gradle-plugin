@@ -2,7 +2,6 @@ package com.sergnat.offlins
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPluginExtension
@@ -19,26 +18,25 @@ class TestTasksConfigurator(
     private val jacocoRuntimeConf: Configuration
 ) {
 
-    fun configure(
-        instrumentClassesTask: InstrumentClassesOfflineTask,
-        instrumentedJarTask: Jar
-    ) {
-        project.tasks.withType(Test::class.java) {
-            it.dependsOn(instrumentClassesTask, instrumentedJarTask)
+    fun configure(instrumentClassesTask: InstrumentClassesOfflineTask) {
+        project.tasks.withType(Test::class.java) { testTask ->
+            testTask.dependsOn(instrumentClassesTask)
         }
-        project.substituteInstrumentedArtifacts(instrumentClassesTask, instrumentedJarTask)
+        substituteInstrumentedArtifacts(instrumentClassesTask)
     }
 
-    private fun Project.substituteInstrumentedArtifacts(
-        instrumentClassesTask: InstrumentClassesOfflineTask,
-        instrumentedJarTask: Jar
-    ) = gradle.taskGraph.whenReady { graph ->
+    private fun substituteInstrumentedArtifacts(
+        instrumentClassesTask: InstrumentClassesOfflineTask
+    ) = project.gradle.taskGraph.whenReady { graph ->
         if (graph.hasTask(instrumentClassesTask)) {
-            tasks.doFirstOnTestTask {
-                systemProperty("jacoco-agent.destfile", Paths.get(buildDir.path, "/jacoco/tests.exec"))
+            project.tasks.doFirstOnTestTask {
+                systemProperty(
+                    "jacoco-agent.destfile",
+                    Paths.get(project.buildDir.path, "/jacoco/tests.exec")
+                )
 
                 substituteInstrumentedClassesToClasspath(instrumentClassesTask.instrumentedClassesDir)
-                substituteInstrumentedJarToClasspath(instrumentedJarTask)
+                removeFromClasspathUninstrumentedJars()
                 classpath += jacocoRuntimeConf
             }
         }
@@ -52,54 +50,25 @@ class TestTasksConfigurator(
         classpath += project.files(dirWithInstrumentedClasses)
     }
 
-    private fun Test.substituteInstrumentedJarToClasspath(instrumentedJarTask: Jar) {
-        val jarsToRemove: FileCollection = moduleDependencies(project)
+    private fun Test.removeFromClasspathUninstrumentedJars() {
+        val newFileCollection: FileCollection = project.files()
+        val recursiveOnProjectDependencyJars: FileCollection = recursiveOnProjectDependencies(project)
+            .asSequence()
             .flatMap { it.tasks.withType(Jar::class.java) }
+            .filter { it.name == "jar" }
             .map { it.outputs.files }
-            .fold(project.files()) { files, candidate ->
-                files.plus(candidate)
-                files
+            .fold(newFileCollection) { allFiles, nextPart ->
+                allFiles.plus(nextPart)
             }
-        classpath.minus(jarsToRemove)
-        classpath += instrumentedJarTask.outputs.files
-    }
-
-    private fun moduleDependencies(project: Project): Set<Project> {
-        val modules: MutableSet<Project> = mutableSetOf()
-        val projectsToScan = ArrayDeque(listOf(project))
-        while (projectsToScan.isNotEmpty()) {
-            val proj: Project = projectsToScan.removeFirst()
-            getProjectDependencies(proj)
-                .map { it.dependencyProject }
-                .forEach { dependencyProject ->
-                    val notScannedBefore: Boolean = modules.add(dependencyProject)
-                    if (notScannedBefore) {
-                        projectsToScan.addLast(dependencyProject)
-                    }
-                }
-        }
-        return modules
-    }
-
-    private fun getProjectDependencies(project: Project): Set<ProjectDependency> {
-        return project.configurations.names.asSequence()
-            .filter { it == IMPLEMENTATION_CONFIG || it == COMPILE_CONFIG }
-            .map { project.configurations.getByName(it) }
-            .flatMap { it.dependencies.withType(ProjectDependency::class.java) }
-            .toSet()
+        classpath -= recursiveOnProjectDependencyJars
     }
 
     private fun TaskContainer.doFirstOnTestTask(action: Test.() -> Unit) {
         withType(Test::class.java) { testTask ->
             testTask.doFirst {
-                (it as Test).action()
+                testTask.action()
             }
         }
-    }
-
-    private companion object {
-        const val IMPLEMENTATION_CONFIG = "implementation"
-        const val COMPILE_CONFIG = "compile"
     }
 
 }

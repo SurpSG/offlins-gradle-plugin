@@ -3,6 +3,9 @@ package com.sergnat.offlins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
+import org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.jvm.tasks.Jar
 import java.io.File
@@ -11,21 +14,18 @@ class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
         addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
+
+        val instrumentClassesTask = tasks.create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
+
+        val instrumentedJar = tasks.createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
+        setupInstrumentedJarConfiguration(instrumentedJar)
+        setTestsToDependOnInstrumentedJars()
+
         val jacocoRuntimeConf: Configuration = addConfigurationWithDependency(
             JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT
         )
-        val jacocoInstrumentedConf: Configuration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION)
+        TestTasksConfigurator(project, jacocoRuntimeConf).configure(instrumentClassesTask)
 
-        with(tasks) {
-            val instrumentClassesTask = create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
-            val instrumentedJarTask = createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
-            artifacts.add(jacocoInstrumentedConf.name, instrumentedJarTask)
-
-            TestTasksConfigurator(project, jacocoRuntimeConf).configure(
-                instrumentClassesTask,
-                instrumentedJarTask
-            )
-        }
     }
 
     private fun TaskContainer.createAssembleInstrumentedJarTask(instrumentedClassesDir: File): Jar {
@@ -35,6 +35,27 @@ class OfflinsPlugin : Plugin<Project> {
 
             from(instrumentedClassesDir)
             archiveBaseName.set("${project.name}-$INSTRUMENTED_JAR_SUFFIX")
+        }
+    }
+
+    private fun Project.setupInstrumentedJarConfiguration(instrumentedJar: Jar) {
+        val instrumentedJarConfiguration: Configuration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION) {
+            it.isCanBeConsumed = true
+            it.isCanBeResolved = false
+            it.extendsFrom(
+                configurations.getByName(IMPLEMENTATION_CONFIGURATION_NAME),
+                configurations.getByName(RUNTIME_ONLY_CONFIGURATION_NAME)
+            )
+        }
+        artifacts.add(instrumentedJarConfiguration.name, instrumentedJar)
+    }
+
+    private fun Project.setTestsToDependOnInstrumentedJars() = afterEvaluate {
+        getOnProjectDependencies(project).forEach { onProjectDep ->
+            dependencies.add(
+                JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+                project.createOnProjectDependency(onProjectDep.name, JACOCO_INSTRUMENTED_CONFIGURATION)
+            )
         }
     }
 
