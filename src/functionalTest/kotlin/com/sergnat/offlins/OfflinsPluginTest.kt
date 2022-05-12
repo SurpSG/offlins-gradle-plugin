@@ -5,7 +5,10 @@ import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENTED_JAR_SUFFIX
 import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
 import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_INSTRUMENTED_CONFIGURATION
 import org.assertj.core.api.Assertions.assertThat
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
+import org.jacoco.core.data.ExecutionData
+import org.jacoco.core.data.ExecutionDataStore
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -74,7 +77,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     }
 
     @Test
-    fun `test check`() {
+    fun `test task must collect coverage data`() {
         // setup
         buildFile.appendText(
             """
@@ -88,24 +91,25 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         """.trimIndent()
         )
 
-        // run // assert
-        gradleRunner.withArguments("test").build()
-            .assertThatOutputLines {
-                val expectedClassesDir = Paths.get("build", InstrumentClassesOfflineTask.OUTPUT_DIR_NAME).toString()
-                `as`("contains instrumented classes dir $expectedClassesDir").anyMatch {
-                    it.startsWith(markerToken) && it.endsWith(expectedClassesDir)
-                }
+        // run
+        val buildResult: BuildResult = gradleRunner.runTask("test")
 
-                val instrumentedJarFileName = Paths.get(
-                    "build/libs/", "${TEST_PROJECT_RESOURCE_NAME}-$INSTRUMENTED_JAR_SUFFIX.jar"
-                ).toString()
-                `as`("contains instrumented jar: $instrumentedJarFileName").anyMatch {
-                    it.startsWith(markerToken) && it.endsWith(instrumentedJarFileName)
-                }
+        // assert
+        buildResult.assertThatOutputLines {
+            val expectedClassesDir = Paths.get("build", InstrumentClassesOfflineTask.OUTPUT_DIR_NAME).toString()
+            `as`("contains instrumented classes dir $expectedClassesDir").anyMatch {
+                it.startsWith(markerToken) && it.endsWith(expectedClassesDir)
             }
 
-        assertThat(rootProjectDir.resolve("build/jacoco/tests.exec")).isFile.isNotEmpty
-        // TODO verify exec contains coverage info for Class1
+            val instrumentedJarFileName = Paths.get(
+                "build/libs/", "${TEST_PROJECT_RESOURCE_NAME}-$INSTRUMENTED_JAR_SUFFIX.jar"
+            ).toString()
+            `as`("contains instrumented jar: $instrumentedJarFileName").anyMatch {
+                it.startsWith(markerToken) && it.endsWith(instrumentedJarFileName)
+            }
+        }
+
+        assertCoverageDataFileContainsCoverageInfo()
     }
 
     @Test
@@ -154,6 +158,23 @@ class OfflinsPluginTest : BaseOfflinsTest() {
                 file.getInputStream(entry).use { it.readBytes() }
             }
             .toList()
+    }
+
+    private fun assertCoverageDataFileContainsCoverageInfo() {
+        val execFile: File = rootProjectDir.resolve("build/jacoco/tests.exec")
+        assertThat(execFile).isFile.isNotEmpty
+
+        val expectedClass = "com/java/test/Class1"
+        val executionData: ExecutionDataStore = loadExecutionData(execFile)
+        assertThat(executionData.contents)
+            .isNotEmpty
+            .flatExtracting(ExecutionData::getName)
+            .containsExactly(expectedClass)
+
+        val dataByClass: ExecutionData = executionData.contents.first { it.name == expectedClass }
+        assertThat(dataByClass.probes)
+            .isNotEmpty
+            .contains(true)
     }
 
     override fun buildTestConfiguration() = TestConfiguration(

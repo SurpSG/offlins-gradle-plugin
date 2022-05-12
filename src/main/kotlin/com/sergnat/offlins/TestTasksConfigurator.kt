@@ -66,9 +66,17 @@ class TestTasksConfigurator(
 
     private fun moduleDependencies(project: Project): Set<Project> {
         val modules: MutableSet<Project> = mutableSetOf()
-        getProjectDependencies(project).forEach {
-            modules += it.dependencyProject
-            modules += moduleDependencies(it.dependencyProject)
+        val projectsToScan = ArrayDeque(listOf(project))
+        while (projectsToScan.isNotEmpty()) {
+            val proj: Project = projectsToScan.removeFirst()
+            getProjectDependencies(proj)
+                .map { it.dependencyProject }
+                .forEach { dependencyProject ->
+                    val notScannedBefore: Boolean = modules.add(dependencyProject)
+                    if (notScannedBefore) {
+                        projectsToScan.addLast(dependencyProject)
+                    }
+                }
         }
         return modules
     }
