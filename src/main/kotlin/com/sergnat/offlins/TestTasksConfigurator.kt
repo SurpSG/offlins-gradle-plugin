@@ -32,7 +32,7 @@ class TestTasksConfigurator(
             project.tasks.doFirstOnTestTask {
                 systemProperty(
                     "jacoco-agent.destfile",
-                    Paths.get(project.buildDir.path, "/jacoco/tests.exec")
+                    Paths.get(project.buildDir.path, DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION)
                 )
 
                 substituteInstrumentedClassesToClasspath(instrumentClassesTask.instrumentedClassesDir)
@@ -69,6 +69,10 @@ class TestTasksConfigurator(
                 testTask.action()
             }
         }
+    }
+
+    companion object {
+        const val DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION = "jacoco/tests.exec"
     }
 
 }

@@ -26,6 +26,7 @@ class OfflinsPlugin : Plugin<Project> {
         )
         TestTasksConfigurator(project, jacocoRuntimeConf).configure(instrumentClassesTask)
 
+        tasks.create(GENERATE_JACOCO_REPORTS_TASK, OfflinsJacocoReport::class.java)
     }
 
     private fun TaskContainer.createAssembleInstrumentedJarTask(instrumentedClassesDir: File): Jar {
@@ -73,8 +74,9 @@ class OfflinsPlugin : Plugin<Project> {
 
     companion object {
         const val INSTRUMENT_CLASSES_TASK = "instrumentClassesOffline"
-
         const val ASSEMBLE_INSTRUMENTED_JAR_TASK = "assembleInstrumentedJar"
+        const val GENERATE_JACOCO_REPORTS_TASK = "coverageReport"
+
         const val INSTRUMENTED_JAR_SUFFIX = "instrumented"
 
         const val JACOCO_CONFIGURATION = "jacoco"
