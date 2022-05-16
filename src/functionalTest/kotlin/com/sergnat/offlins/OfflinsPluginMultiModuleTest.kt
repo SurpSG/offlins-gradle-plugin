@@ -1,7 +1,8 @@
 package com.sergnat.offlins
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class OfflinsPluginMultiModuleTest : BaseOfflinsTest() {
 
@@ -14,10 +15,13 @@ class OfflinsPluginMultiModuleTest : BaseOfflinsTest() {
         initializeGradleTest()
     }
 
-    @Test
-    fun `test task must collect coverage data`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["7.4.2", "6.9.1"])
+    fun `test task must collect coverage data`(gradleVersion: String) {
         // run
-        gradleRunner.runTask("test")
+        gradleRunner
+            .withGradleVersion(gradleVersion)
+            .runTask("test")
 
         // assert
         sequenceOf(

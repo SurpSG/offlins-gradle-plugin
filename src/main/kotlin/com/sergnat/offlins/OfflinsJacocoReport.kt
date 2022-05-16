@@ -16,8 +16,18 @@ open class OfflinsJacocoReport : JacocoReport() {
         executionData.from(Paths.get(project.buildDir.path, DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION))
 
         reports.html.apply {
-            required.set(true)
-            outputLocation.set(project.buildDir.resolve(RELATIVE_HTML_REPORT_LOCATIONS))
+            val targetLocation = project.buildDir.resolve(RELATIVE_HTML_REPORT_LOCATIONS)
+            when {
+                GradleVersion(project.gradle.gradleVersion) >= GRADLE_6_1 -> {
+                    required.set(true)
+                    outputLocation.set(targetLocation)
+                }
+
+                else -> {
+                    isEnabled = true
+                    destination = targetLocation
+                }
+            }
         }
     }
 

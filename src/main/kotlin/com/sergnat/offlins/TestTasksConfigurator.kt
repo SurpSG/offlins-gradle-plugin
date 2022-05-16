@@ -2,11 +2,7 @@ package com.sergnat.offlins
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
@@ -43,10 +39,7 @@ class TestTasksConfigurator(
     }
 
     private fun Test.substituteInstrumentedClassesToClasspath(dirWithInstrumentedClasses: File) {
-        val javaExt: JavaPluginExtension = project.extensions.getByType(JavaPluginExtension::class.java)
-        val classesDirectory: Provider<Directory> = javaExt.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-            .java.classesDirectory
-        classpath -= project.files(classesDirectory)
+        classpath -= project.files(project.getMainSourceSetClassFilesDir())
         classpath += project.files(dirWithInstrumentedClasses)
     }
 
