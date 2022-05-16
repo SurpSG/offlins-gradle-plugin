@@ -4,12 +4,7 @@ import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_CONFIGURATION
 import groovy.lang.Closure
 import groovy.lang.GroovyObject
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.Directory
-import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
@@ -35,7 +30,7 @@ open class InstrumentClassesOfflineTask : DefaultTask() {
         )
 
         ant.invokeWithBody("instrument", mapOf("destdir" to instrumentedClassesDir)) {
-            getClassFiles().addToAntBuilder(this, "resources")
+            project.getMainSourceSetClassFiles().addToAntBuilder(this, "resources")
         }
     }
 
@@ -57,16 +52,6 @@ open class InstrumentClassesOfflineTask : DefaultTask() {
                 body()
                 return null
             }
-        }
-    }
-
-    private fun getClassFiles(): FileCollection {
-        val javaExt: JavaPluginExtension = project.extensions.getByType(JavaPluginExtension::class.java)
-        val classesDirectory: Provider<Directory> = javaExt.sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-            .java.classesDirectory
-
-        return project.fileTree(classesDirectory) {
-            it.setIncludes(listOf("**/*.class"))
         }
     }
 
