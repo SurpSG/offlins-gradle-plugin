@@ -1,0 +1,8 @@
+plugins {
+    id 'com.sergnat.offlins'
+}
+
+dependencies {
+    implementation(project(":mod2-dep-on-mod3"))
+    implementation(project(":mod3"))
+}

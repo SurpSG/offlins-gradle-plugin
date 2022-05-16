@@ -5,10 +5,12 @@ import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENTED_JAR_SUFFIX
 import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
 import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_INSTRUMENTED_CONFIGURATION
 import org.assertj.core.api.Assertions.assertThat
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.nio.file.Paths
 import java.util.zip.ZipFile
 
 
@@ -18,6 +20,8 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         const val TEST_PROJECT_RESOURCE_NAME = "single-module-test-project"
         const val CLASS_FILE_EXT = ".class"
     }
+
+    private val markerToken = javaClass.simpleName
 
     @BeforeEach
     fun setup() {
@@ -33,7 +37,8 @@ class OfflinsPluginTest : BaseOfflinsTest() {
             "jacocoRuntime:org.jacoco:org.jacoco.agent:${jacocoVersion}"
         )
 
-        buildFile.appendText("""
+        buildFile.appendText(
+            """
             project.configurations
                 .forEach { config ->
                     config.dependencies.forEach { dep ->
@@ -41,7 +46,8 @@ class OfflinsPluginTest : BaseOfflinsTest() {
                         println dependencyString
                     }
                 }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         // run // assert
         gradleRunner.withArguments("tasks", "--dry-run").build()
@@ -53,17 +59,48 @@ class OfflinsPluginTest : BaseOfflinsTest() {
         // setup
         val markerToken = javaClass.simpleName
         val expectedArtifact = "$markerToken:$TEST_PROJECT_RESOURCE_NAME-$INSTRUMENTED_JAR_SUFFIX.jar"
-        buildFile.appendText("""
+        buildFile.appendText(
+            """
             configurations.getByName("$JACOCO_INSTRUMENTED_CONFIGURATION")
                 .artifacts.forEach {
                     def confArtifact = ["$markerToken", it.file.name].join(":")
                     println confArtifact
                 }
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         // run // assert
         gradleRunner.withArguments("tasks", "--dry-run").build()
             .assertOutputContainsStrings(expectedArtifact)
+    }
+
+    @Test
+    fun `test task must collect coverage data`() {
+        // setup
+        buildFile.appendText(
+            """
+            tasks.withType(Test) {
+                doLast {
+                    classpath.forEach {
+                        println '$markerToken:' + it 
+                    }
+                }
+            }
+        """.trimIndent()
+        )
+
+        // run
+        val buildResult: BuildResult = gradleRunner.runTask("test")
+
+        // assert
+        buildResult.assertThatOutputLines {
+            val expectedClassesDir = Paths.get("build", InstrumentClassesOfflineTask.OUTPUT_DIR_NAME).toString()
+            `as`("contains instrumented classes dir $expectedClassesDir").anyMatch {
+                it.startsWith(markerToken) && it.endsWith(expectedClassesDir)
+            }
+        }
+
+        rootProjectDir.assertModuleHasCoverageDataForClasses(ClassCov("com/java/test/Class1", Covered.PARTIALLY))
     }
 
     @Test

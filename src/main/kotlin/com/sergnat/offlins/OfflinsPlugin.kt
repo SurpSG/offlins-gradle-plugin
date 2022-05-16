@@ -3,6 +3,9 @@ package com.sergnat.offlins
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
+import org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.jvm.tasks.Jar
 import java.io.File
@@ -11,14 +14,18 @@ class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
         addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
-        addConfigurationWithDependency(JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT)
-        val jacocoInstrumentedConf: Configuration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION)
 
-        with(tasks) {
-            val instrumentClassesTask = create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
-            val instrumentedJarTask = createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
-            artifacts.add(jacocoInstrumentedConf.name, instrumentedJarTask)
-        }
+        val instrumentClassesTask = tasks.create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
+
+        val instrumentedJar = tasks.createAssembleInstrumentedJarTask(instrumentClassesTask.instrumentedClassesDir)
+        setupInstrumentedJarConfiguration(instrumentedJar)
+        setTestsToDependOnInstrumentedJars()
+
+        val jacocoRuntimeConf: Configuration = addConfigurationWithDependency(
+            JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT
+        )
+        TestTasksConfigurator(project, jacocoRuntimeConf).configure(instrumentClassesTask)
+
     }
 
     private fun TaskContainer.createAssembleInstrumentedJarTask(instrumentedClassesDir: File): Jar {
@@ -31,15 +38,37 @@ class OfflinsPlugin : Plugin<Project> {
         }
     }
 
+    private fun Project.setupInstrumentedJarConfiguration(instrumentedJar: Jar) {
+        val instrumentedJarConfiguration: Configuration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION) {
+            it.isCanBeConsumed = true
+            it.isCanBeResolved = false
+            it.extendsFrom(
+                configurations.getByName(IMPLEMENTATION_CONFIGURATION_NAME),
+                configurations.getByName(RUNTIME_ONLY_CONFIGURATION_NAME)
+            )
+        }
+        artifacts.add(instrumentedJarConfiguration.name, instrumentedJar)
+    }
+
+    private fun Project.setTestsToDependOnInstrumentedJars() = afterEvaluate {
+        getOnProjectDependencies(project).forEach { onProjectDep ->
+            dependencies.add(
+                JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME,
+                project.createOnProjectDependency(onProjectDep.name, JACOCO_INSTRUMENTED_CONFIGURATION)
+            )
+        }
+    }
+
     private fun Project.addConfigurationWithDependency(
         configurationName: String,
         jacocoDependency: JacocoDependency
-    ) {
+    ): Configuration {
         val configuration: Configuration = configurations.create(configurationName)
         dependencies.add(
             configuration.name,
             jacocoDependency.buildDependency(dependencies)
         )
+        return configuration
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package com.sergnat.offlins
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.ListAssert
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
@@ -38,6 +39,11 @@ fun expectedHtmlReportFiles(vararg packages: String): Array<String> = arrayOf(
 
 fun BuildResult.assertOutputContainsStrings(vararg expectedString: String): BuildResult {
     assertThat(output).contains(*expectedString)
+    return this
+}
+
+fun BuildResult.assertThatOutputLines(isValid: ListAssert<String>.() -> Unit): BuildResult {
+    assertThat(output.lines()).isValid()
     return this
 }
 

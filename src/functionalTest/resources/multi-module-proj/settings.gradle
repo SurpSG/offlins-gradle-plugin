@@ -1,0 +1,5 @@
+rootProject.name = 'multi-module-proj'
+include 'mod1-dep-on-mod2-and-mod3'
+include 'mod2-dep-on-mod3'
+include 'mod3'
+
