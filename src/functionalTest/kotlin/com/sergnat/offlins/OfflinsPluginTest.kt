@@ -1,8 +1,6 @@
 package com.sergnat.offlins
 
-import com.sergnat.offlins.OfflinsJacocoReport.Companion.RELATIVE_HTML_REPORT_LOCATIONS
 import com.sergnat.offlins.OfflinsPlugin.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
-import com.sergnat.offlins.OfflinsPlugin.Companion.GENERATE_JACOCO_REPORTS_TASK
 import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENTED_JAR_SUFFIX
 import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
 import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_INSTRUMENTED_CONFIGURATION
@@ -77,7 +75,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     }
 
     @Test
-    fun `test task must collect coverage data`() {
+    fun `test classpath must contain instrumented artifacts`() {
         // setup
         buildFile.appendText(
             """
@@ -143,19 +141,6 @@ class OfflinsPluginTest : BaseOfflinsTest() {
             }
     }
 
-    @Test
-    fun `coverageReport task must generate html report`() {
-        gradleRunner.withArguments("test", GENERATE_JACOCO_REPORTS_TASK).build()
-
-        val reportDir: File = rootProjectDir.resolve("build").resolve(RELATIVE_HTML_REPORT_LOCATIONS)
-        assertThat(reportDir)
-            .isDirectory
-            .isDirectoryRecursivelyContaining { it.name == "index.html" && it.isFile }
-            .isDirectoryRecursivelyContaining { it.name == "com.java.test" && it.isDirectory }
-            .isDirectoryRecursivelyContaining { it.name == "Class1.html" && it.isFile }
-            .isDirectoryRecursivelyContaining { it.name == "Class1.java.html" && it.isFile }
-    }
-
     private fun readJarClasses(jarFile: File): List<ByteArray> {
         val file = ZipFile(jarFile)
         return file.entries().asSequence()
@@ -166,9 +151,6 @@ class OfflinsPluginTest : BaseOfflinsTest() {
             .toList()
     }
 
-    override fun buildTestConfiguration() = TestConfiguration(
-        TEST_PROJECT_RESOURCE_NAME,
-        "build.gradle"
-    )
+    override fun resourceTestProject() = TEST_PROJECT_RESOURCE_NAME
 
 }

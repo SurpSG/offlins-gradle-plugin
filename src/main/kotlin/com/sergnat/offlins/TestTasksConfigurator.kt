@@ -3,9 +3,9 @@ package com.sergnat.offlins
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.testing.Test
-import org.gradle.jvm.tasks.Jar
 import java.io.File
 import java.nio.file.Paths
 
@@ -14,10 +14,11 @@ class TestTasksConfigurator(
     private val jacocoRuntimeConf: Configuration
 ) {
 
+    private val testTaskName: String = JavaPlugin.TEST_TASK_NAME
+
     fun configure(instrumentClassesTask: InstrumentClassesOfflineTask) {
-        project.tasks.withType(Test::class.java) { testTask ->
-            testTask.dependsOn(instrumentClassesTask)
-        }
+        project.tasks.getByName(testTaskName).dependsOn(instrumentClassesTask.name)
+
         substituteInstrumentedArtifacts(instrumentClassesTask)
     }
 
@@ -47,8 +48,7 @@ class TestTasksConfigurator(
         val newFileCollection: FileCollection = project.files()
         val recursiveOnProjectDependencyJars: FileCollection = recursiveOnProjectDependencies(project)
             .asSequence()
-            .flatMap { it.tasks.withType(Jar::class.java) }
-            .filter { it.name == "jar" }
+            .map { it.tasks.getByName(JavaPlugin.JAR_TASK_NAME) }
             .map { it.outputs.files }
             .fold(newFileCollection) { allFiles, nextPart ->
                 allFiles.plus(nextPart)
@@ -57,9 +57,9 @@ class TestTasksConfigurator(
     }
 
     private fun TaskContainer.doFirstOnTestTask(action: Test.() -> Unit) {
-        withType(Test::class.java) { testTask ->
-            testTask.doFirst {
-                testTask.action()
+        getByName(testTaskName) {
+            it.doFirst { testTask ->
+                (testTask as Test).action()
             }
         }
     }

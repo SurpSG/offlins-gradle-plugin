@@ -39,6 +39,6 @@ fun getOnProjectDependencies(project: Project): Set<ProjectDependency> {
         // TODO support older versions: it == COMPILE_CONFIG }
         .filter { it == JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME }
         .map { project.configurations.getByName(it) }
-        .flatMap { it.dependencies.withType(ProjectDependency::class.java) }
+        .flatMap { it.dependencies.withType(ProjectDependency::class.java).asSequence() }
         .toSet()
 }

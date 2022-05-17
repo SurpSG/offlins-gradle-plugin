@@ -17,18 +17,13 @@ abstract class BaseOfflinsTest {
      * should be invoked in @Before test class method
      */
     fun initializeGradleTest() {
-        val configuration: TestConfiguration = buildTestConfiguration()
         tempTestDir = Files.newTemporaryFolder()
-        rootProjectDir = tempTestDir.copyDirFromResources<BaseOfflinsTest>(configuration.resourceTestProject)
-        buildFile = rootProjectDir.resolve(configuration.rootBuildFilePath)
+        rootProjectDir = tempTestDir.copyDirFromResources<BaseOfflinsTest>(resourceTestProject())
+        buildFile = rootProjectDir.resolve("build.gradle")
 
         gradleRunner = buildGradleRunner(rootProjectDir)
     }
 
-    abstract fun buildTestConfiguration(): TestConfiguration
-}
+    abstract fun resourceTestProject(): String
 
-class TestConfiguration(
-    val resourceTestProject: String,
-    val rootBuildFilePath: String
-)
+}
