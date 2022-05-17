@@ -14,9 +14,8 @@ fun Project.getMainSourceSetClassFiles(): FileCollection {
 }
 
 fun Project.getMainSourceSetClassFilesDir(): Any {
-    val gradleVersion = GradleVersion(project.gradle.gradleVersion)
     return when {
-        gradleVersion >= GRADLE_6_1 -> {
+        project.gradleVersion >= GRADLE_6_1 -> {
             getMainSourceSet().java.classesDirectory
         }
 
@@ -30,10 +29,9 @@ fun Project.getMainSourceSetSources(): FileCollection {
     return getMainSourceSet().java.sourceDirectories
 }
 
-private fun Project.getMainSourceSet(): SourceSet {
-    val gradleVersion = GradleVersion(project.gradle.gradleVersion)
+fun Project.getMainSourceSet(): SourceSet {
     return when {
-        gradleVersion >= GRADLE_7_1 -> {
+        project.gradleVersion >= GRADLE_7_1 -> {
             extensions.getByType(JavaPluginExtension::class.java)
                 .sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
         }

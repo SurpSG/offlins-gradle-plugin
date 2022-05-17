@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group 'org.example'
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile 'junit:junit:4.12'
+    }
+
+}
+

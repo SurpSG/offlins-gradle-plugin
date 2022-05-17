@@ -1,0 +1,3 @@
+rootProject.name = 'multi-module-proj-compile-deps'
+include 'mod1-dep-on-mod2'
+include 'mod2'

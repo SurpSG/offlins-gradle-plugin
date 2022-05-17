@@ -21,11 +21,11 @@ class CoverageReportTaskTest : BaseOfflinsTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["7.4.2", "6.9.1", "5.6.4"])
+    @ValueSource(strings = ["4.10.3", "5.6.4", "6.9.1", "7.4.2"])
     fun `coverageReport task must generate html report`(gradleVersion: String) {
         gradleRunner
             .withGradleVersion(gradleVersion)
-            .withArguments("test", GENERATE_JACOCO_REPORTS_TASK)
+            .withArguments("test", GENERATE_JACOCO_REPORTS_TASK, "-s")
             .build()
 
         val reportDir: File = rootProjectDir.resolve("build").resolve(RELATIVE_HTML_REPORT_LOCATIONS)

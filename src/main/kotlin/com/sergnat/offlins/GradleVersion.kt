@@ -1,11 +1,14 @@
 package com.sergnat.offlins
 
+import org.gradle.api.Project
+
+val GRADLE_5_1 = GradleVersion("5.1")
 val GRADLE_6_1 = GradleVersion("6.1")
 val GRADLE_7_1 = GradleVersion("7.1")
 
 class GradleVersion(
     value: String
-): Comparable<GradleVersion> {
+) : Comparable<GradleVersion> {
 
     private val intValue: Int = toComparableInt(value)
 
@@ -34,3 +37,5 @@ class GradleVersion(
 }
 
 
+val Project.gradleVersion: GradleVersion
+    get() = GradleVersion(gradle.gradleVersion)
