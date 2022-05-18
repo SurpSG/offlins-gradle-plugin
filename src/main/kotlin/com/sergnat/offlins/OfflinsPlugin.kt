@@ -6,14 +6,28 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskContainer
+import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.tasks.Jar
 import java.io.File
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
-        addConfigurationWithDependency(JACOCO_CONFIGURATION, JACOCO_ANT)
+        val offlinsExtension = extensions.create(OFFLINS_EXTENSION, OfflinsExtension::class.java)
+        val jacocoVersion: Provider<String> = provider { offlinsExtension.jacocoVersion }
+
+        addConfigurationWithDependency(
+            JACOCO_CONFIGURATION,
+            jacocoAntDependency(jacocoVersion)
+        )
+        val jacocoRuntimeConf: Configuration = addConfigurationWithDependency(
+            JACOCO_RUNTIME_CONFIGURATION,
+            jacocoAgentDependency(jacocoVersion)
+        )
 
         val instrumentClassesTask = tasks.create(INSTRUMENT_CLASSES_TASK, InstrumentClassesOfflineTask::class.java)
 
@@ -21,12 +35,15 @@ class OfflinsPlugin : Plugin<Project> {
         setupInstrumentedJarConfiguration(instrumentedJar)
         setTestsToDependOnInstrumentedJars()
 
-        val jacocoRuntimeConf: Configuration = addConfigurationWithDependency(
-            JACOCO_RUNTIME_CONFIGURATION, JACOCO_AGENT
-        )
-        TestTasksConfigurator(project, jacocoRuntimeConf).configure(instrumentClassesTask)
+        val testTask: Test = tasks.getByName(JavaPlugin.TEST_TASK_NAME) as Test
+        val execFile: Path = testTask.execFileLocation()
+        TestTasksConfigurator(project, jacocoRuntimeConf).configure(instrumentClassesTask, testTask, execFile)
 
-        tasks.create(GENERATE_JACOCO_REPORTS_TASK, OfflinsJacocoReport::class.java)
+        tasks.create(
+            GENERATE_JACOCO_REPORTS_TASK,
+            OfflinsJacocoReport::class.java,
+            execFile
+        )
     }
 
     private fun TaskContainer.createAssembleInstrumentedJarTask(instrumentedClassesDir: File): Jar {
@@ -67,17 +84,32 @@ class OfflinsPlugin : Plugin<Project> {
 
     private fun Project.addConfigurationWithDependency(
         configurationName: String,
-        jacocoDependency: JacocoDependency
+        jacocoDependency: Provider<JacocoDependency>
     ): Configuration {
         val configuration: Configuration = configurations.create(configurationName)
-        dependencies.add(
-            configuration.name,
-            jacocoDependency.buildDependency(dependencies)
-        )
+        when {
+            gradleVersion >= GRADLE_6_8 -> {
+                dependencies.add(
+                    configuration.name,
+                    jacocoDependency.map { it.buildDependency(dependencies) }
+                )
+            }
+            else -> afterEvaluate {
+                dependencies.add(configuration.name, jacocoDependency.get().buildDependency(dependencies))
+            }
+        }
         return configuration
     }
 
+    private fun Test.execFileLocation(): Path = Paths.get(
+        project.buildDir.path,
+        "jacoco",
+        "$name.exec"
+    )
+
     companion object {
+        const val OFFLINS_EXTENSION = "offlinsCoverage"
+
         const val INSTRUMENT_CLASSES_TASK = "instrumentClassesOffline"
         const val ASSEMBLE_INSTRUMENTED_JAR_TASK = "assembleInstrumentedJar"
         const val GENERATE_JACOCO_REPORTS_TASK = "coverageReport"

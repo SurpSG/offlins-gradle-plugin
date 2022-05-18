@@ -4,6 +4,7 @@ import org.gradle.api.Project
 
 val GRADLE_5_1 = GradleVersion("5.1")
 val GRADLE_6_1 = GradleVersion("6.1")
+val GRADLE_6_8 = GradleVersion("6.8")
 val GRADLE_7_1 = GradleVersion("7.1")
 
 class GradleVersion(
