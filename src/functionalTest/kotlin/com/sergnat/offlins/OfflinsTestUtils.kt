@@ -27,15 +27,7 @@ fun buildGradleRunner(
         }
 }
 
-fun GradleRunner.runTask(task: String): BuildResult = withArguments(task).build()
-
-fun GradleRunner.runTaskAndFail(task: String): BuildResult = withArguments(task).buildAndFail()
-
-fun expectedHtmlReportFiles(vararg packages: String): Array<String> = arrayOf(
-    "index.html",
-    "jacoco-resources",
-    "jacoco-sessions.html"
-) + packages
+fun GradleRunner.runTask(task: String): BuildResult = withArguments(task, "-s").build()
 
 fun BuildResult.assertOutputContainsStrings(vararg expectedString: String): BuildResult {
     assertThat(output).contains(*expectedString)

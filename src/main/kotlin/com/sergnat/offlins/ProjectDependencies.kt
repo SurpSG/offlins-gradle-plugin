@@ -36,9 +36,12 @@ fun recursiveOnProjectDependencies(project: Project): Set<Project> {
 
 fun getOnProjectDependencies(project: Project): Set<ProjectDependency> {
     return project.configurations.names.asSequence()
-        // TODO support older versions: it == COMPILE_CONFIG }
-        .filter { it == JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME }
+        .filter {
+            it == JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME || it == COMPILE_CONFIG
+        }
         .map { project.configurations.getByName(it) }
-        .flatMap { it.dependencies.withType(ProjectDependency::class.java) }
+        .flatMap { it.dependencies.withType(ProjectDependency::class.java).asSequence() }
         .toSet()
 }
+
+private const val COMPILE_CONFIG = "compile"

@@ -11,13 +11,32 @@ open class OfflinsJacocoReport : JacocoReport() {
 
         jacocoClasspath = project.configurations.getAt(OfflinsPlugin.JACOCO_CONFIGURATION)
 
-        sourceDirectories.from(project.getMainSourceSetSources())
-        classDirectories.from(project.getMainSourceSetClassFilesDir())
-        executionData.from(Paths.get(project.buildDir.path, DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION))
+        val execDataFile = Paths.get(project.buildDir.path, DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION)
+        when {
+            project.gradleVersion >= GRADLE_5_1 -> {
+                sourceDirectories.from(project.getMainSourceSetSources())
+                classDirectories.from(project.getMainSourceSetClassFilesDir())
+                executionData.from(execDataFile)
+            }
+            else -> {
+                sourceSets(project.getMainSourceSet())
+                executionData(execDataFile)
+            }
+        }
 
         reports.html.apply {
-            required.set(true)
-            outputLocation.set(project.buildDir.resolve(RELATIVE_HTML_REPORT_LOCATIONS))
+            val targetLocation = project.buildDir.resolve(RELATIVE_HTML_REPORT_LOCATIONS)
+            when {
+                project.gradleVersion >= GRADLE_6_1 -> {
+                    required.set(true)
+                    outputLocation.set(targetLocation)
+                }
+
+                else -> {
+                    isEnabled = true
+                    destination = targetLocation
+                }
+            }
         }
     }
 

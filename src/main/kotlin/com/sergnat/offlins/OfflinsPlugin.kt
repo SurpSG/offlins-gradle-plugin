@@ -35,7 +35,12 @@ class OfflinsPlugin : Plugin<Project> {
             dependsOn += INSTRUMENT_CLASSES_TASK
 
             from(instrumentedClassesDir)
-            archiveBaseName.set("${project.name}-$INSTRUMENTED_JAR_SUFFIX")
+
+            val archiveName = "${project.name}-$INSTRUMENTED_JAR_SUFFIX"
+            when {
+                project.gradleVersion >= GRADLE_5_1 -> archiveBaseName.set(archiveName)
+                else -> baseName = archiveName
+            }
         }
     }
 

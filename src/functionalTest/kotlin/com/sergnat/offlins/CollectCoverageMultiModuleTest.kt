@@ -1,9 +1,10 @@
 package com.sergnat.offlins
 
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
-class OfflinsPluginMultiModuleTest : BaseOfflinsTest() {
+class CollectCoverageMultiModuleTest : BaseOfflinsTest() {
 
     companion object {
         const val TEST_PROJECT_RESOURCE_NAME = "multi-module-proj"
@@ -14,10 +15,13 @@ class OfflinsPluginMultiModuleTest : BaseOfflinsTest() {
         initializeGradleTest()
     }
 
-    @Test
-    fun `test task must collect coverage data`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["7.4.2", "6.9.1", "5.6.4"])
+    fun `test task must collect coverage data`(gradleVersion: String) {
         // run
-        gradleRunner.runTask("test")
+        gradleRunner
+            .withGradleVersion(gradleVersion)
+            .runTask("test")
 
         // assert
         sequenceOf(
@@ -39,9 +43,6 @@ class OfflinsPluginMultiModuleTest : BaseOfflinsTest() {
         }
     }
 
-    override fun buildTestConfiguration() = TestConfiguration(
-        TEST_PROJECT_RESOURCE_NAME,
-        "build.gradle"
-    )
+    override fun resourceTestProject() = TEST_PROJECT_RESOURCE_NAME
 
 }
