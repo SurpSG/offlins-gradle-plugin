@@ -1,7 +1,7 @@
 package com.sergnat.offlins
 
+import com.sergnat.offlins.OfflinsJacocoReport.Companion.GENERATE_JACOCO_REPORTS_TASK
 import com.sergnat.offlins.OfflinsJacocoReport.Companion.RELATIVE_HTML_REPORT_LOCATIONS
-import com.sergnat.offlins.OfflinsPlugin.Companion.GENERATE_JACOCO_REPORTS_TASK
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest

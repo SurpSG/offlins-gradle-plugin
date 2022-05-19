@@ -1,8 +1,8 @@
 package com.sergnat.offlins
 
-import com.sergnat.offlins.OfflinsPlugin.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
-import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENTED_JAR_SUFFIX
-import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
+import com.sergnat.offlins.InstrumentClassesOfflineTask.Companion.INSTRUMENT_CLASSES_TASK
+import com.sergnat.offlins.InstrumentedJar.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
+import com.sergnat.offlins.InstrumentedJar.Companion.INSTRUMENTED_JAR_SUFFIX
 import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_INSTRUMENTED_CONFIGURATION
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult

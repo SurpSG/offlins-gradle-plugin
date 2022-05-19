@@ -43,6 +43,7 @@ open class OfflinsJacocoReport @Inject constructor(
 
     companion object {
         const val RELATIVE_HTML_REPORT_LOCATIONS = "reports/jacoco/html"
+        const val GENERATE_JACOCO_REPORTS_TASK = "coverageReport"
     }
 
 }
