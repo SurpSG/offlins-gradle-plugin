@@ -31,7 +31,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     @Test
     fun `plugin must add jacoco configurations with dependencies`() {
         // setup
-        val jacocoVersion = "0.8.8"
+        val jacocoVersion = "0.8.7"
         val expectedDependencies = arrayOf(
             "jacoco:org.jacoco:org.jacoco.ant:${jacocoVersion}",
             "jacocoRuntime:org.jacoco:org.jacoco.agent:${jacocoVersion}"
@@ -39,6 +39,10 @@ class OfflinsPluginTest : BaseOfflinsTest() {
 
         buildFile.appendText(
             """
+            offlinsCoverage {
+                jacocoVersion = '$jacocoVersion'
+            }
+
             project.configurations
                 .forEach { config ->
                     config.dependencies.forEach { dep ->

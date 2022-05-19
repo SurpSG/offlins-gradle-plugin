@@ -4,33 +4,36 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.testing.Test
 import java.io.File
-import java.nio.file.Paths
+import java.nio.file.Path
 
 class TestTasksConfigurator(
     private val project: Project,
     private val jacocoRuntimeConf: Configuration
 ) {
 
-    private val testTaskName: String = JavaPlugin.TEST_TASK_NAME
-
-    fun configure(instrumentClassesTask: InstrumentClassesOfflineTask) {
-        project.tasks.getByName(testTaskName).dependsOn(instrumentClassesTask.name)
-
-        substituteInstrumentedArtifacts(instrumentClassesTask)
+    fun configure(
+        instrumentClassesTask: InstrumentClassesOfflineTask,
+        testTask: Test,
+        execFile: Path
+    ) {
+        testTask.dependsOn(instrumentClassesTask.name)
+        substituteInstrumentedArtifacts(
+            instrumentClassesTask,
+            testTask,
+            execFile
+        )
     }
 
     private fun substituteInstrumentedArtifacts(
-        instrumentClassesTask: InstrumentClassesOfflineTask
+        instrumentClassesTask: InstrumentClassesOfflineTask,
+        testTask: Test,
+        execFile: Path
     ) = project.gradle.taskGraph.whenReady { graph ->
         if (graph.hasTask(instrumentClassesTask)) {
-            project.tasks.doFirstOnTestTask {
-                systemProperty(
-                    "jacoco-agent.destfile",
-                    Paths.get(project.buildDir.path, DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION)
-                )
+            testTask.doFirstOnTestTask {
+                systemProperty("jacoco-agent.destfile", execFile)
 
                 substituteInstrumentedClassesToClasspath(instrumentClassesTask.instrumentedClassesDir)
                 removeFromClasspathUninstrumentedJars()
@@ -56,16 +59,10 @@ class TestTasksConfigurator(
         classpath -= recursiveOnProjectDependencyJars
     }
 
-    private fun TaskContainer.doFirstOnTestTask(action: Test.() -> Unit) {
-        getByName(testTaskName) {
-            it.doFirst { testTask ->
-                (testTask as Test).action()
-            }
+    private fun Test.doFirstOnTestTask(action: Test.() -> Unit) {
+        doFirst { testTask ->
+            (testTask as Test).action()
         }
-    }
-
-    companion object {
-        const val DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION = "jacoco/tests.exec"
     }
 
 }

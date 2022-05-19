@@ -1,17 +1,18 @@
 package com.sergnat.offlins
 
-import com.sergnat.offlins.TestTasksConfigurator.Companion.DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION
 import org.gradle.testing.jacoco.tasks.JacocoReport
-import java.nio.file.Paths
+import java.nio.file.Path
+import javax.inject.Inject
 
-open class OfflinsJacocoReport : JacocoReport() {
+open class OfflinsJacocoReport @Inject constructor(
+    execDataFile: Path
+) : JacocoReport() {
 
     init {
         description = "Generates JaCoCo code coverage reports"
 
         jacocoClasspath = project.configurations.getAt(OfflinsPlugin.JACOCO_CONFIGURATION)
 
-        val execDataFile = Paths.get(project.buildDir.path, DEFAULT_RELATIVE_JACOCO_EXEC_LOCATION)
         when {
             project.gradleVersion >= GRADLE_5_1 -> {
                 sourceDirectories.from(project.getMainSourceSetSources())

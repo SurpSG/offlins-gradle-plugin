@@ -2,29 +2,31 @@ package com.sergnat.offlins
 
 import org.gradle.api.artifacts.ExternalModuleDependency
 import org.gradle.api.artifacts.dsl.DependencyHandler
+import org.gradle.api.provider.Provider
 
-const val DEFAULT_JACOCO_VERSION = "0.8.8"
+fun jacocoAntDependency(jacocoVersion: Provider<String>): Provider<JacocoDependency> {
+    return jacocoDep("org.jacoco.ant", jacocoVersion, "nodeps")
+}
 
-val JACOCO_ANT = JacocoDependency(
-    "org.jacoco",
-    "org.jacoco.ant",
-    DEFAULT_JACOCO_VERSION,
-    "nodeps"
-)
+fun jacocoAgentDependency(jacocoVersion: Provider<String>): Provider<JacocoDependency> {
+    return jacocoDep("org.jacoco.agent", jacocoVersion, "runtime")
+}
 
-val JACOCO_AGENT = JacocoDependency(
-    "org.jacoco",
-    "org.jacoco.agent",
-    DEFAULT_JACOCO_VERSION,
-    "runtime"
-)
+private fun jacocoDep(
+    name: String,
+    version: Provider<String>,
+    classifier: String
+): Provider<JacocoDependency> {
+    return version.map { JacocoDependency(name, it, classifier) }
+}
 
-data class JacocoDependency(
-    private val group: String,
+class JacocoDependency(
     private val name: String,
     private val version: String,
     private val classifier: String
 ) {
+
+    private val group: String = "org.jacoco"
 
     fun buildDependency(dependencyHandler: DependencyHandler): ExternalModuleDependency {
         val dependencyProperties = mapOf(

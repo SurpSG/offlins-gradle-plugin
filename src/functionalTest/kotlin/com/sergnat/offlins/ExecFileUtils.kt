@@ -17,7 +17,7 @@ enum class Covered {
 data class ClassCov(val className: String, val covered: Covered)
 
 fun File.assertModuleHasCoverageDataForClasses(vararg classes: ClassCov) {
-    val execFile: File = resolve("build/jacoco/tests.exec")
+    val execFile: File = resolve("build/jacoco/test.exec")
     execFile.assertExecFileIsNotEmpty()
 
     val executionData: ExecutionDataStore = loadExecutionData(execFile)
