@@ -3,6 +3,7 @@ package com.sergnat.offlins
 import com.sergnat.offlins.InstrumentClassesOfflineTask.Companion.INSTRUMENT_CLASSES_TASK
 import com.sergnat.offlins.InstrumentedJar.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
 import com.sergnat.offlins.OfflinsJacocoReport.Companion.GENERATE_JACOCO_REPORTS_TASK
+import com.sergnat.offlins.utils.orElseProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -18,7 +19,9 @@ class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
         val offlinsExtension = extensions.create(OFFLINS_EXTENSION, OfflinsExtension::class.java)
-        val jacocoVersion: Provider<String> = provider { offlinsExtension.jacocoVersion }
+        val jacocoVersion: Provider<String> = offlinsExtension.jacocoVersion.orElseProvider(
+            provider { DEFAULT_JACOCO_VERSION }
+        )
 
         addConfigurationWithDependency(
             JACOCO_CONFIGURATION,
@@ -38,9 +41,13 @@ class OfflinsPlugin : Plugin<Project> {
 
         tasks.create(
             GENERATE_JACOCO_REPORTS_TASK,
-            OfflinsJacocoReport::class.java,
-            execFile
-        )
+            OfflinsJacocoReport::class.java
+        ) {
+            it.execDataFile.set(execFile)
+            it.reportsExtension.set(provider {
+                offlinsExtension.report
+            })
+        }
     }
 
     private fun Project.setupInstrumentedJarTask(instrumentClassesTask: InstrumentClassesOfflineTask) {
@@ -97,6 +104,8 @@ class OfflinsPlugin : Plugin<Project> {
     )
 
     companion object {
+        const val DEFAULT_JACOCO_VERSION = "0.8.8"
+
         const val OFFLINS_EXTENSION = "offlinsCoverage"
 
         const val JACOCO_CONFIGURATION = "jacoco"
