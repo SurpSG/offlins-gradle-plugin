@@ -1,6 +1,5 @@
 package com.sergnat.offlins
 
-import com.sergnat.offlins.utils.orElseProvider
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
@@ -8,7 +7,6 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.CollectionCallbackActionDecorator
 import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.reporting.DirectoryReport
 import org.gradle.api.reporting.SingleFileReport
 import org.gradle.api.tasks.Input
@@ -19,13 +17,13 @@ import org.gradle.internal.reflect.Instantiator
 import java.nio.file.Path
 import javax.inject.Inject
 
-abstract class OfflinsJacocoReport : DefaultTask() {
+open class OfflinsJacocoReport : DefaultTask() {
 
     @get:Input
-    abstract val execDataFile: Property<Path>
+    val execDataFile: Property<Path> = project.objects.property(Path::class.java)
 
     @get:Input
-    abstract val reportsExtension: Property<ReportsExtension>
+    val reportsExtension: Property<ReportsExtension> = project.objects.property(ReportsExtension::class.java)
 
     init {
         description = "Generates JaCoCo code coverage reports"
@@ -33,12 +31,6 @@ abstract class OfflinsJacocoReport : DefaultTask() {
 
     @TaskAction
     open fun generate() {
-        val jacocoReport: JacocoReportsContainerImpl = getInstantiator().newInstance(
-            JacocoReportsContainerImpl::class.java,
-            this,
-            CollectionCallbackActionDecorator.NOOP
-        )
-
         val reportsDir: DirectoryProperty = project.objects.directoryProperty()
         reportsDir.set(
             project.buildDir.resolve(RELATIVE_REPORT_DIR).apply {
@@ -46,6 +38,7 @@ abstract class OfflinsJacocoReport : DefaultTask() {
             }
         )
 
+        val jacocoReport: JacocoReportsContainerImpl = buildJacocoReportsContainer()
         configureHtmlReport(
             reportsDir,
             reportsExtension.map { it.html }.get(),
@@ -71,27 +64,29 @@ abstract class OfflinsJacocoReport : DefaultTask() {
         )
     }
 
+    private fun buildJacocoReportsContainer(): JacocoReportsContainerImpl = getInstantiator().newInstance(
+        JacocoReportsContainerImpl::class.java,
+        this,
+        CollectionCallbackActionDecorator.NOOP
+    )
+
     private fun configureHtmlReport(
         baseReportDir: DirectoryProperty,
-        offlinsCoverageReport: CoverageReport,
+        offlinsCoverageReport: CoverageDirReport,
         jacocoReport: DirectoryReport
     ) {
         with(jacocoReport) {
-            val reportEnabled = offlinsCoverageReport.enabled.orElseProvider(project.provider { true })
+            val reportEnabled: Property<Boolean> = offlinsCoverageReport.enabled.convention(true)
+            val location: Property<Directory> = offlinsCoverageReport.location.convention(baseReportDir.dir(name))
             when {
                 project.gradleVersion >= GRADLE_6_1 -> {
                     required.set(reportEnabled)
-
-                    val directoryProvider: Provider<Directory> = project.layout.dir(offlinsCoverageReport.location)
-                        .orElse(baseReportDir.dir(name))
-                    outputLocation.set(directoryProvider)
+                    outputLocation.set(location)
                 }
                 else -> {
                     isEnabled = reportEnabled.get()
-
                     setDestination(
-                        offlinsCoverageReport.location
-                            .orElseProvider(baseReportDir.file(name).map { it.asFile })
+                        location.map { it.asFile }
                     )
                 }
             }
@@ -101,35 +96,36 @@ abstract class OfflinsJacocoReport : DefaultTask() {
 
     private fun configureFileReport(
         baseReportDir: DirectoryProperty,
-        offlinsCoverageReport: CoverageReport,
+        offlinsCoverageFileReport: CoverageFileReport,
         jacocoReport: SingleFileReport
     ) {
-        val reportEnabled = offlinsCoverageReport.enabled.orElseProvider(project.provider { false })
+        val reportEnabled: Property<Boolean> = offlinsCoverageFileReport.enabled.convention(false)
         val defaultReportFileName = "$name.${jacocoReport.name}"
+        val reportLocation: Property<RegularFile> = offlinsCoverageFileReport.location
+            .convention(baseReportDir.file(defaultReportFileName))
         when {
             project.gradleVersion >= GRADLE_6_1 -> {
                 jacocoReport.required.set(reportEnabled)
-
-                val fileProvider: Provider<RegularFile> = project.layout.file(offlinsCoverageReport.location)
-                    .orElse(baseReportDir.file(defaultReportFileName))
-                jacocoReport.outputLocation.set(fileProvider)
+                jacocoReport.outputLocation.set(reportLocation)
             }
             else -> {
                 jacocoReport.isEnabled = reportEnabled.get()
-
                 jacocoReport.setDestination(
-                    offlinsCoverageReport.location
-                        .orElseProvider(baseReportDir.file(defaultReportFileName).map { it.asFile })
+                    reportLocation.map { it.asFile }
                 )
             }
         }
     }
 
     @Inject
-    protected abstract fun getAntBuilder(): IsolatedAntBuilder?
+    protected open fun getAntBuilder(): IsolatedAntBuilder {
+        throw UnsupportedOperationException("Expected not to be invoked")
+    }
 
     @Inject
-    protected abstract fun getInstantiator(): Instantiator
+    protected open fun getInstantiator(): Instantiator {
+        throw UnsupportedOperationException("Expected not to be invoked")
+    }
 
     companion object {
         const val RELATIVE_REPORT_DIR = "reports/jacoco"

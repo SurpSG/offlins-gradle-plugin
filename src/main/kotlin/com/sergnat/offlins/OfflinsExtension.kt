@@ -1,27 +1,20 @@
 package com.sergnat.offlins
 
 import org.gradle.api.Action
+import org.gradle.api.file.Directory
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import java.io.File
 import javax.inject.Inject
 
-abstract class OfflinsExtension @Inject constructor(
+open class OfflinsExtension @Inject constructor(
     objectFactory: ObjectFactory
 ) {
 
-    abstract val jacocoVersion: Property<String>
+    val jacocoVersion: Property<String> = objectFactory.property(String::class.java)
 
-    val report: ReportsExtension
-
-    init {
-        report = objectFactory.newInstance(
-            ReportsExtension::class.java,
-            objectFactory.newInstance(CoverageReport::class.java),
-            objectFactory.newInstance(CoverageReport::class.java),
-            objectFactory.newInstance(CoverageReport::class.java)
-        )
-    }
+    val report: ReportsExtension = ReportsExtension(objectFactory)
 
     fun reports(action: Action<ReportsExtension>) {
         action.execute(report)
@@ -29,13 +22,34 @@ abstract class OfflinsExtension @Inject constructor(
 
 }
 
-abstract class ReportsExtension @Inject constructor(
-    val html: CoverageReport,
-    val xml: CoverageReport,
-    val csv: CoverageReport
-)
+class ReportsExtension(
+    objectFactory: ObjectFactory
+) {
+    val html: CoverageDirReport = CoverageDirReport(objectFactory)
+    val xml: CoverageFileReport = CoverageFileReport(objectFactory)
+    val csv: CoverageFileReport = CoverageFileReport(objectFactory)
+}
 
-abstract class CoverageReport {
-    abstract val enabled: Property<Boolean>
-    abstract val location: Property<File>
+abstract class AbstractReport<T : FileSystemLocation>(
+    objectFactory: ObjectFactory
+) {
+    val enabled: Property<Boolean> = objectFactory.property(Boolean::class.javaObjectType)
+
+    abstract val location: Property<T>
+}
+
+class CoverageFileReport(
+    objectFactory: ObjectFactory
+) : AbstractReport<RegularFile>(objectFactory) {
+
+    override val location: Property<RegularFile> = objectFactory.fileProperty()
+
+}
+
+class CoverageDirReport(
+    objectFactory: ObjectFactory
+) : AbstractReport<Directory>(objectFactory) {
+
+    override val location: Property<Directory> = objectFactory.directoryProperty()
+
 }

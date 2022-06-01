@@ -8,10 +8,8 @@ open class InstrumentedJar : Jar() {
         description = "Assemble Jar with instrumented classes"
 
         val archiveName = "${project.name}-$INSTRUMENTED_JAR_SUFFIX"
-        when {
-            project.gradleVersion >= GRADLE_5_1 -> archiveBaseName.set(archiveName)
-            else -> baseName = archiveName
-        }
+        archiveBaseName.set(archiveName)
+        archiveFileName.set("$archiveName.jar")
     }
 
     companion object {

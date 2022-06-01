@@ -3,7 +3,6 @@ package com.sergnat.offlins
 import com.sergnat.offlins.InstrumentClassesOfflineTask.Companion.INSTRUMENT_CLASSES_TASK
 import com.sergnat.offlins.InstrumentedJar.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
 import com.sergnat.offlins.OfflinsJacocoReport.Companion.GENERATE_JACOCO_REPORTS_TASK
-import com.sergnat.offlins.utils.orElseProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -18,10 +17,12 @@ import java.nio.file.Paths
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
-        val offlinsExtension = extensions.create(OFFLINS_EXTENSION, OfflinsExtension::class.java)
-        val jacocoVersion: Provider<String> = offlinsExtension.jacocoVersion.orElseProvider(
-            provider { DEFAULT_JACOCO_VERSION }
-        )
+        if (project.gradleVersion < GRADLE_5_1) {
+            throw IllegalStateException("Gradle ${project.gradle.gradleVersion} is not supported.")
+        }
+
+        val offlinsExtension = extensions.create(OFFLINS_EXTENSION, OfflinsExtension::class.java, project.objects)
+        val jacocoVersion: Provider<String> = offlinsExtension.jacocoVersion.convention(DEFAULT_JACOCO_VERSION)
 
         addConfigurationWithDependency(
             JACOCO_CONFIGURATION,
