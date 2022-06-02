@@ -1,14 +1,16 @@
 package com.sergnat.offlins
 
-import com.sergnat.offlins.OfflinsPlugin.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
-import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENTED_JAR_SUFFIX
-import com.sergnat.offlins.OfflinsPlugin.Companion.INSTRUMENT_CLASSES_TASK
+import com.sergnat.offlins.InstrumentClassesOfflineTask.Companion.INSTRUMENT_CLASSES_TASK
+import com.sergnat.offlins.InstrumentedJar.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
+import com.sergnat.offlins.InstrumentedJar.Companion.INSTRUMENTED_JAR_SUFFIX
 import com.sergnat.offlins.OfflinsPlugin.Companion.JACOCO_INSTRUMENTED_CONFIGURATION
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import java.nio.file.Paths
 import java.util.zip.ZipFile
@@ -26,6 +28,19 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     @BeforeEach
     fun setup() {
         initializeGradleTest()
+    }
+
+    @Test
+    fun `applying of plugin must fail if gradle version is less than 5-1`() {
+        val gradleVersion = "5.0"
+
+        gradleRunner
+            .withGradleVersion(gradleVersion)
+            .withArguments("tasks", "--dry-run")
+            .buildAndFail()
+            .assertOutputContainsStrings(
+                "$gradleVersion is not supported"
+            )
     }
 
     @Test
@@ -125,19 +140,21 @@ class OfflinsPluginTest : BaseOfflinsTest() {
             }
     }
 
-    @Test
-    fun `assembleInstrumentedJar task must create jar with instrumented classes`() {
+    @ParameterizedTest
+    @ValueSource(strings = ["5.1", "5.6.4", "6.9.1", "7.4.2"])
+    fun `assembleInstrumentedJar task must create jar with instrumented classes`(gradleVersion: String) {
         // setup
         val instrumentedJarFileName = "${TEST_PROJECT_RESOURCE_NAME}-$INSTRUMENTED_JAR_SUFFIX.jar"
         val expectedJar: File = rootProjectDir.resolve("build/libs/$instrumentedJarFileName")
 
         // run // assert
         gradleRunner
+            .withGradleVersion(gradleVersion)
             .runTask(ASSEMBLE_INSTRUMENTED_JAR_TASK)
             .assertThatTaskStatusIs(INSTRUMENT_CLASSES_TASK, TaskOutcome.SUCCESS)
             .assertThatTaskStatusIs(ASSEMBLE_INSTRUMENTED_JAR_TASK, TaskOutcome.SUCCESS)
 
-        assertThat(expectedJar).isFile
+        assertThat(expectedJar).exists().isFile
         assertThat(readJarClasses(expectedJar))
             .isNotEmpty
             .`as`("Class is not instrumented").allMatch { classFileContent ->

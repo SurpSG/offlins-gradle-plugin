@@ -27,7 +27,7 @@ fun buildGradleRunner(
         }
 }
 
-fun GradleRunner.runTask(task: String): BuildResult = withArguments(task, "-s").build()
+fun GradleRunner.runTask(task: String): BuildResult = withArguments(task, "-si").build()
 
 fun BuildResult.assertOutputContainsStrings(vararg expectedString: String): BuildResult {
     assertThat(output).contains(*expectedString)

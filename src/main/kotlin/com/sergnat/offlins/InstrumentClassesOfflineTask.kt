@@ -56,6 +56,7 @@ open class InstrumentClassesOfflineTask : DefaultTask() {
     }
 
     companion object {
+        const val INSTRUMENT_CLASSES_TASK = "instrumentClassesOffline"
         const val OUTPUT_DIR_NAME = "classes-instrumented"
     }
 
