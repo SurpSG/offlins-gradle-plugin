@@ -10,7 +10,7 @@ diffCoverageReport {
     }
 
     if (isGithub) {
-        jacocoExecFiles = fileTree("jacoco") { include("**/*.exec") }
+        jacocoExecFiles = fileTree("tests-artifacts/jacoco") { include("**/*.exec") }
     }
 
     reports {
