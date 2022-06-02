@@ -24,38 +24,28 @@ jobs:
         with:
           java-version: 1.8
 
-# TODO uncomment when the project will go to public
-#      - name: Add test results to PR
-#        uses: EnricoMi/publish-unit-test-result-action@v1
-#        if: always()
-#        continue-on-error: true
-#        with:
-#          files: "build/test-results/**/*.xml"
-
-      - name: Pull JaCoCo exec files
+      - name: Pull tests artifacts
         uses: actions/download-artifact@master
         with:
-          name: jacoco-exec
-          path: jacoco
+          name: tests-artifacts
+          path: tests-artifacts
 
       - name: Run diff coverage check
         continue-on-error: ${{ contains(github.event.pull_request.labels.*.name, 'ignore-diff-coverage') }}
         run: ./gradlew diffCoverage -Pgithub -PdiffBase="refs/remotes/origin/$GITHUB_BASE_REF"
 
-# TODO uncomment when the project will go to public
-#      - name: Add diff coverage report to PR
-#        id: jacoco
-#        uses: madrapps/jacoco-report@v1.2
-#        if: always()
-#        continue-on-error: true
-#        with:
-#          paths: build/reports/jacoco/diffCoverage/report.xml
-#          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add test results to PR
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        continue-on-error: true
+        with:
+          files: "tests-artifacts/test-results/**/*.xml"
 
-# TODO uncomment when the project will go to public
-# TODO add CODECOV_TOKEN token
-#      - name: Upload coverage to Codecov
-#        uses: codecov/codecov-action@v1
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          file: build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+      - name: Add diff coverage report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.2
+        if: always()
+        continue-on-error: true
+        with:
+          paths: build/reports/jacoco/diffCoverage/report.xml
+          token: ${{ secrets.GITHUB_TOKEN }}

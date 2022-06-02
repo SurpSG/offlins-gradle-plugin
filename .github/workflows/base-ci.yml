@@ -22,10 +22,18 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build & Test
-        run: ./gradlew check --parallel
+        run: ./gradlew check jacocoTestReport --parallel
 
       - name: Upload JaCoCo coverage data
         uses: actions/upload-artifact@master
         with:
-          name: jacoco-exec
-          path: build/jacoco
+          name: tests-artifacts
+          path: |
+            build/jacoco
+            build/test-results
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: build/reports/jacoco/test/jacocoTestReport.xml

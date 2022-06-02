@@ -37,6 +37,9 @@ jacoco {
 }
 
 tasks.jacocoTestReport {
+    functionalTestSuite.targets.forEach { suiteTarget ->
+        dependsOn(suiteTarget.testTask)
+    }
 
     executionData.setFrom(fileTree(buildDir).include("/jacoco/*.exec"))
     reports {
