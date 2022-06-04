@@ -1,4 +1,4 @@
-# offlin-gradle-plugin
+# offlins-gradle-plugin
 
 [![Main branch](https://github.com/SurpSG/offlins-gradle-plugin/actions/workflows/main-branch.yml/badge.svg)](https://github.com/SurpSG/offlins-gradle-plugin/actions/workflows/main-branch.yml)
 [![codecov](https://codecov.io/gh/SurpSG/offlins-gradle-plugin/branch/main/graph/badge.svg?token=08EKXE7agx)](https://codecov.io/gh/SurpSG/offlins-gradle-plugin)
