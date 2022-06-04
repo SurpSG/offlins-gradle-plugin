@@ -1,5 +1,6 @@
 # offlins-gradle-plugin
 
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io.github.surpsg/offlins-gradle-plugin/maven-metadata.xml.svg?label=Gradle%20Plugin%20Portal)](https://github.com/SurpSG/offlins-gradle-plugin)
 [![Main branch](https://github.com/SurpSG/offlins-gradle-plugin/actions/workflows/main-branch.yml/badge.svg)](https://github.com/SurpSG/offlins-gradle-plugin/actions/workflows/main-branch.yml)
 [![codecov](https://codecov.io/gh/SurpSG/offlins-gradle-plugin/branch/main/graph/badge.svg?token=08EKXE7agx)](https://codecov.io/gh/SurpSG/offlins-gradle-plugin)
 [![GitHub issues](https://img.shields.io/github/issues/SurpSG/offlins-gradle-plugin)](https://github.com/SurpSG/offlins-gradle-plugin/issues)
