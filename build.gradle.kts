@@ -2,8 +2,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
+
     `java-gradle-plugin`
     alias(deps.plugins.pluginPublish)
+    `maven-publish`
+
     id("com.sergnat.offlins.plugin-test")
     alias(deps.plugins.detekt)
 }
