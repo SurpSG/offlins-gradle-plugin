@@ -14,7 +14,7 @@ The min required Gradle version is **5.1**.
 
 ## Installation
 
-The plugin is published to (Gradle plugins)[https://plugins.gradle.org/plugin/com.sergnat.offlins].
+The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/com.sergnat.offlins).
 
 <details open>
 
