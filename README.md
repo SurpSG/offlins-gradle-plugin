@@ -14,6 +14,30 @@ The min required Gradle version is **5.1**.
 
 ## Installation
 
+The plugin is published to (Gradle plugins)[https://plugins.gradle.org/plugin/com.sergnat.offlins].
+
+<details open>
+
+<summary><b>Groovy</b></summary>
+
+```groovy
+plugins {
+  id "com.sergnat.offlins" version "0.1.0"
+}
+```
+
+</details>
+<details>
+<summary><b>Kotlin</b></summary>
+
+```kotlin
+plugins {
+  id("com.sergnat.offlin") version "0.1.0"
+}
+```
+
+</details>
+
 ## Configuration
 
 All properties are **optional** but have the following defaults:
