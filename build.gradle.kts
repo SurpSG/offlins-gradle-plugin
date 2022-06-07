@@ -7,11 +7,11 @@ plugins {
     alias(deps.plugins.pluginPublish)
     `maven-publish`
 
-    id("com.sergnat.offlins.plugin-test")
+    id("io.github.surpsg.offlins.plugin-test")
     alias(deps.plugins.detekt)
 }
 
-group = "com.sergnat"
+group = "io.github.surpsg"
 version = "0.1.0"
 
 repositories {
@@ -25,10 +25,10 @@ tasks.withType<KotlinCompile> {
 gradlePlugin {
     plugins {
         create("offlins-gradle-plugin") {
-            id = "com.sergnat.offlins"
+            id = "io.github.surpsg.offlins"
             displayName = "JaCoCo Offline Instrumentation"
             description = "Plugin that applies JaCoCo offline instrumentation"
-            implementationClass = "com.sergnat.offlins.OfflinsPlugin"
+            implementationClass = "io.github.surpsg.offlins.OfflinsPlugin"
         }
     }
 }
