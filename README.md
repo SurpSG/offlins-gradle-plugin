@@ -1,6 +1,6 @@
 # offlins-gradle-plugin
 
-[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/com.sergnat/offlins-gradle-plugin/maven-metadata.xml.svg?label=Gradle%20Plugin%20Portal)](https://plugins.gradle.org/plugin/com.sergnat.offlins)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/io.github.surpsg/offlins-gradle-plugin/maven-metadata.xml.svg?label=Gradle%20Plugin%20Portal)](https://plugins.gradle.org/plugin/io.github.surpsg.offlins)
 [![Main branch](https://github.com/SurpSG/offlins-gradle-plugin/actions/workflows/main-branch.yml/badge.svg)](https://github.com/SurpSG/offlins-gradle-plugin/actions/workflows/main-branch.yml)
 [![codecov](https://codecov.io/gh/SurpSG/offlins-gradle-plugin/branch/main/graph/badge.svg?token=08EKXE7agx)](https://codecov.io/gh/SurpSG/offlins-gradle-plugin)
 [![GitHub issues](https://img.shields.io/github/issues/SurpSG/offlins-gradle-plugin)](https://github.com/SurpSG/offlins-gradle-plugin/issues)
@@ -15,7 +15,7 @@ The min required Gradle version is **5.1**.
 
 ## Installation
 
-The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/com.sergnat.offlins).
+The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/io.github.surpsg.offlins).
 
 <details open>
 
@@ -23,7 +23,7 @@ The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/co
 
 ```groovy
 plugins {
-  id "com.sergnat.offlins" version "0.1.0"
+  id "io.github.surpsg.offlins" version "0.1.0"
 }
 ```
 
@@ -33,7 +33,7 @@ plugins {
 
 ```kotlin
 plugins {
-  id("com.sergnat.offlin") version "0.1.0"
+  id("io.github.surpsg.offlins") version "0.1.0"
 }
 ```
 
@@ -74,7 +74,7 @@ offlinsCoverage {
 <summary><b>Kotlin</b></summary>
 
 ```kotlin
-configure<com.sergnat.offlins.OfflinsExtension> {
+configure<io.github.surpsg.offlins.OfflinsExtension> {
     jacocoVersion = "0.8.7" // Optional. By default `0.8.8`
   
     reports {

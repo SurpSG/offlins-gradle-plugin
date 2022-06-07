@@ -1,5 +1,5 @@
 plugins {
-    id 'com.sergnat.offlins'
+    id 'io.github.surpsg.offlins'
 }
 dependencies {
     implementation(project(":mod3"))
