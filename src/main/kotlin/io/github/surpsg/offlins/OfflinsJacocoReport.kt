@@ -26,6 +26,7 @@ open class OfflinsJacocoReport : DefaultTask() {
     val reportsExtension: Property<ReportsExtension> = project.objects.property(ReportsExtension::class.java)
 
     init {
+        group = "verification"
         description = "Generates JaCoCo code coverage reports"
     }
 
