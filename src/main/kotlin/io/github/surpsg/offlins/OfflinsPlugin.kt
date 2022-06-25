@@ -119,8 +119,6 @@ class OfflinsPlugin : Plugin<Project> {
     }
 
     private fun Project.log(logLevel: LogLevel = LogLevel.DEBUG, msg: String) {
-        println("======================")
-        println(msg)
         logger.log(logLevel, msg)
     }
 

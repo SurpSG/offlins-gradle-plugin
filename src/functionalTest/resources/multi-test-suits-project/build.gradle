@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'jvm-test-suite'
+    id 'io.github.surpsg.offlins'
+}
+
+repositories {
+    mavenCentral()
+}
+
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+        }
+
+        integrationTest(JvmTestSuite) {
+            useJUnitJupiter()
+            dependencies {
+                implementation project
+            }
+            sources {
+                java {
+                    srcDirs = ['src/intTest/java']
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn(testing.suites.integrationTest)
+}

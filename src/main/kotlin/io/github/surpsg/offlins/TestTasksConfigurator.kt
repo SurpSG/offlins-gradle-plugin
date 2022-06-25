@@ -3,51 +3,65 @@ package io.github.surpsg.offlins
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
+import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.testing.Test
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
-internal class TestTasksConfigurator(
-    private val offlinsContext: OfflinsContext
-) {
+internal class TestTasksConfigurator {
 
-    fun configure() {
-        offlinsContext.project.tasks.withType(Test::class.java).forEach { testTask ->
-            configureTestTask(testTask)
+    fun configure(context: OfflinsContext) {
+        context.project.testTasks().configureEach { testTask ->
+            configureTestTask(context, testTask)
         }
-        offlinsContext.project.setTestsToDependOnInstrumentedJars()
+        setTestsToDependOnInstrumentedJars(context)
     }
 
-    private fun configureTestTask(testTask: Test) {
+    private fun configureTestTask(context: OfflinsContext, testTask: Test) {
         val execFile: Path = testTask.execFileLocation()
-        offlinsContext.execFiles.add(execFile)
+        context.execFiles.add(execFile)
 
-        // TODO use provider instead of .get() ?
-        val instrumentClassesTask: InstrumentClassesOfflineTask = offlinsContext.instrumentedClassesTask.get()
-        testTask.dependsOn(instrumentClassesTask.name)
+        testTask.dependsOn(context.instrumentedClassesTask)
 
-        offlinsContext.project.gradle.taskGraph.whenReady { graph ->
+        context.project.gradle.taskGraph.whenReady { graph ->
+            val instrumentClassesTask: InstrumentClassesOfflineTask = context.instrumentedClassesTask.get()
             if (graph.hasTask(instrumentClassesTask)) {
                 testTask.doFirst(
                     SubstituteInstrumentedArtifactsAction( // TODO this is heavy task. Shouldn't be invoked in loop
                         instrumentClassesTask.instrumentedClassesDir,
                         execFile,
-                        offlinsContext.offlinsConfigurations.jacocoRuntimeConfiguration
+                        context.offlinsConfigurations.jacocoRuntimeConfiguration
                     )
                 )
             }
         }
     }
 
-    private fun Project.setTestsToDependOnInstrumentedJars() = afterEvaluate {
-        getOnProjectDependencies(project).forEach { onProjectDep ->
-            dependencies.add(
-                JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME, // TODO other test tasks
-                project.createOnProjectDependency(onProjectDep.name, OfflinsPlugin.JACOCO_INSTRUMENTED_CONFIGURATION)
-            )
+    private fun Project.testTasks(): TaskCollection<Test> {
+        return project.tasks.withType(Test::class.java)
+    }
+
+    private fun setTestsToDependOnInstrumentedJars(context: OfflinsContext) = context.project.afterEvaluate { project ->
+        val testTasks: TaskCollection<Test> = project.testTasks()
+        val onProjectDeps: Set<Dependency> = getOnProjectDependencies(project).asSequence()
+            .map { onProjDep ->
+                project.createOnProjectDependency(
+                    onProjDep.name,
+                    OfflinsPlugin.JACOCO_INSTRUMENTED_CONFIGURATION
+                )
+            }
+            .toSet()
+
+        testTasks.configureEach { testTask ->
+            onProjectDeps.forEach { dependency ->
+                val testTaskImplementation = "${testTask.name}${IMPLEMENTATION_CONFIGURATION_NAME.capitalize()}"
+                project.dependencies.add(testTaskImplementation, dependency)
+            }
         }
     }
 
@@ -77,14 +91,13 @@ internal class TestTasksConfigurator(
 
         private fun Test.removeFromClasspathUninstrumentedJars() {
             val newFileCollection: FileCollection = project.files()
-            val recursiveOnProjectDependencyJars: FileCollection = recursiveOnProjectDependencies(project)
-                .asSequence()
+            val recursiveDeps: Sequence<Project> = recursiveOnProjectDependencies(project).asSequence() + project
+            classpath -= recursiveDeps
                 .map { it.tasks.getByName(JavaPlugin.JAR_TASK_NAME) }
                 .map { it.outputs.files }
                 .fold(newFileCollection) { allFiles, nextPart ->
                     allFiles.plus(nextPart)
                 }
-            classpath -= recursiveOnProjectDependencyJars
         }
 
     }
