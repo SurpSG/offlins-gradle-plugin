@@ -6,6 +6,7 @@ import io.github.surpsg.offlins.OfflinsJacocoReport.Companion.GENERATE_JACOCO_RE
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import org.gradle.api.provider.Provider
@@ -18,14 +19,13 @@ class OfflinsPlugin : Plugin<Project> {
             throw IllegalStateException("Gradle ${project.gradle.gradleVersion} is not supported.")
         }
 
-        // TODO add logs!
         val offlinsContext: OfflinsContext = createOfflinsConfigurations()
 
         createInstrumentedClassesTask(offlinsContext)
         createInstrumentedJarTask(offlinsContext)
         createCoverageReportTask(offlinsContext)
 
-        TestTasksConfigurator(offlinsContext).configure()
+        TestTasksConfigurator().configure(offlinsContext)
     }
 
     private fun Project.createOfflinsConfigurations(): OfflinsContext {
@@ -42,6 +42,7 @@ class OfflinsPlugin : Plugin<Project> {
                 jacocoAgentDependency(jacocoVersion)
             ),
             jacocoInstrumentedConfiguration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION) {
+                log(msg = "Created configuration '$JACOCO_INSTRUMENTED_CONFIGURATION' in project '${project.name}'")
                 it.isCanBeConsumed = true
                 it.isCanBeResolved = false
                 it.extendsFrom(
@@ -71,46 +72,56 @@ class OfflinsPlugin : Plugin<Project> {
                 dependencies.add(configuration.name, jacocoDependency.get().buildDependency(dependencies))
             }
         }
+        log(msg = "Created configuration '$configurationName' in project '${project.name}'")
         return configuration
     }
 
-    private fun createInstrumentedClassesTask(offlinsContext: OfflinsContext) {
+    private fun createInstrumentedClassesTask(context: OfflinsContext) {
         // TODO use .register(...) instead of .create(...) ?
-        val instrumentClassesTask: InstrumentClassesOfflineTask = offlinsContext.project.tasks.create(
+        val instrumentClassesTask: InstrumentClassesOfflineTask = context.project.tasks.create(
             INSTRUMENT_CLASSES_TASK,
             InstrumentClassesOfflineTask::class.java
         )
-        offlinsContext.instrumentedClassesTask.set(instrumentClassesTask)
+        context.instrumentedClassesTask.set(instrumentClassesTask)
+        context.project.log(msg = "Added task '${instrumentClassesTask.name}' to '${context.project.name}'")
     }
 
-    private fun createInstrumentedJarTask(offlinsContext: OfflinsContext) {
-        val instrumentedClassesDir: Provider<File> = offlinsContext.instrumentedClassesTask.map {
+    private fun createInstrumentedJarTask(context: OfflinsContext) {
+        val instrumentedClassesDir: Provider<File> = context.instrumentedClassesTask.map {
             it.instrumentedClassesDir
         }
-        with(offlinsContext.project) {
+        with(context.project) {
             // TODO use .register(...) instead of .create(...) ?
             val instrumentedJar = tasks.create(ASSEMBLE_INSTRUMENTED_JAR_TASK, InstrumentedJar::class.java) { jar ->
                 jar.dependsOn += INSTRUMENT_CLASSES_TASK
                 jar.from(instrumentedClassesDir)
             }
             artifacts.add(
-                offlinsContext.offlinsConfigurations.jacocoInstrumentedConfiguration.name,
+                context.offlinsConfigurations.jacocoInstrumentedConfiguration.name,
                 instrumentedJar
             )
-            offlinsContext.instrumentedJar.set(instrumentedJar)
+            context.instrumentedJar.set(instrumentedJar)
+            log(msg = "Added task '${instrumentedJar.name}' to '${context.project.name}'")
         }
     }
 
-    private fun createCoverageReportTask(offlinsContext: OfflinsContext) {
-        offlinsContext.project.tasks.create( // TODO use .register(...) instead of .create(...) ?
+    private fun createCoverageReportTask(context: OfflinsContext) {
+        context.project.tasks.create( // TODO use .register(...) instead of .create(...) ?
             GENERATE_JACOCO_REPORTS_TASK,
             OfflinsJacocoReport::class.java
         ) {
-            it.execDataFiles.addAll(offlinsContext.execFiles)
-            it.reportsExtension.set(offlinsContext.project.provider {
-                offlinsContext.offlinsExtension.report
+            it.project.log(msg = "Added task '${it.name}' to '${context.project.name}'")
+            it.execDataFiles.addAll(context.execFiles)
+            it.reportsExtension.set(context.project.provider {
+                context.offlinsExtension.report
             })
         }
+    }
+
+    private fun Project.log(logLevel: LogLevel = LogLevel.DEBUG, msg: String) {
+        println("======================")
+        println(msg)
+        logger.log(logLevel, msg)
     }
 
     companion object {
