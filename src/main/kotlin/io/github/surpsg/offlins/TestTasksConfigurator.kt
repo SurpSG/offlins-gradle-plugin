@@ -6,36 +6,54 @@ import org.gradle.api.Task
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskCollection
 import org.gradle.api.tasks.testing.Test
-import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
 internal class TestTasksConfigurator {
 
-    fun configure(context: OfflinsContext) {
-        context.project.testTasks().configureEach { testTask ->
-            configureTestTask(context, testTask)
+    fun configure(offlinsContext: OfflinsContext) {
+        val project: Project = offlinsContext.project
+
+        val configurationContext: ConfigurationContext = createConfigurationContext(offlinsContext)
+        val testTasks: TaskCollection<Test> = project.testTasks()
+        testTasks.configureEach { testTask ->
+            configureTestTask(configurationContext, testTask)
         }
-        setTestsToDependOnInstrumentedJars(context)
+
+        setTestsToDependOnInstrumentedJars(project, testTasks)
     }
 
-    private fun configureTestTask(context: OfflinsContext, testTask: Test) {
+    private fun createConfigurationContext(offlinsContext: OfflinsContext): ConfigurationContext {
+        val recursiveDeps: Provider<Set<Project>> = offlinsContext.project.provider {
+            recursiveOnProjectDependencies(offlinsContext.project) + offlinsContext.project
+        }
+        return ConfigurationContext(
+            offlinsContext,
+            recursiveDeps
+        )
+    }
+
+    private fun configureTestTask(
+        configurationContext: ConfigurationContext,
+        testTask: Test
+    ) {
+        val offlinsContext: OfflinsContext = configurationContext.offlinsContext
         val execFile: Path = testTask.execFileLocation()
-        context.execFiles.add(execFile)
+        offlinsContext.execFiles.add(execFile)
 
-        testTask.dependsOn(context.instrumentedClassesTask)
+        testTask.dependsOn(offlinsContext.instrumentedClassesTask)
 
-        context.project.gradle.taskGraph.whenReady { graph ->
-            val instrumentClassesTask: InstrumentClassesOfflineTask = context.instrumentedClassesTask.get()
+        offlinsContext.project.gradle.taskGraph.whenReady { graph ->
+            val instrumentClassesTask: InstrumentClassesOfflineTask = offlinsContext.instrumentedClassesTask.get()
             if (graph.hasTask(instrumentClassesTask)) {
                 testTask.doFirst(
-                    SubstituteInstrumentedArtifactsAction( // TODO this is heavy task. Shouldn't be invoked in loop
-                        instrumentClassesTask.instrumentedClassesDir,
+                    SubstituteInstrumentedArtifactsAction(
+                        offlinsContext,
+                        configurationContext,
                         execFile,
-                        context.offlinsConfigurations.jacocoRuntimeConfiguration
                     )
                 )
             }
@@ -46,8 +64,10 @@ internal class TestTasksConfigurator {
         return project.tasks.withType(Test::class.java)
     }
 
-    private fun setTestsToDependOnInstrumentedJars(context: OfflinsContext) = context.project.afterEvaluate { project ->
-        val testTasks: TaskCollection<Test> = project.testTasks()
+    private fun setTestsToDependOnInstrumentedJars(
+        proj: Project,
+        testTasks: TaskCollection<Test>
+    ) = proj.afterEvaluate { project ->
         val onProjectDeps: Set<Dependency> = getOnProjectDependencies(project).asSequence()
             .map { onProjDep ->
                 project.createOnProjectDependency(
@@ -58,8 +78,8 @@ internal class TestTasksConfigurator {
             .toSet()
 
         testTasks.configureEach { testTask ->
+            val testTaskImplementation = "${testTask.name}Implementation"
             onProjectDeps.forEach { dependency ->
-                val testTaskImplementation = "${testTask.name}${IMPLEMENTATION_CONFIGURATION_NAME.capitalize()}"
                 project.dependencies.add(testTaskImplementation, dependency)
             }
         }
@@ -72,27 +92,30 @@ internal class TestTasksConfigurator {
     )
 
     private class SubstituteInstrumentedArtifactsAction(
-        private val instrumentClassesDir: File,
-        private val execFile: Path,
-        private val jacocoRuntimeDependencies: FileCollection
+        private val offlinsContext: OfflinsContext,
+        private val configurationContext: ConfigurationContext,
+        private val execFile: Path
     ) : Action<Task> {
+
         override fun execute(task: Task) = with(task as Test) {
             systemProperty("jacoco-agent.destfile", execFile)
 
-            substituteInstrumentedClassesToClasspath(instrumentClassesDir)
+            substituteInstrumentedClassesToClasspath()
             removeFromClasspathUninstrumentedJars()
-            classpath += jacocoRuntimeDependencies
+            classpath += offlinsContext.offlinsConfigurations.jacocoRuntimeConfiguration.get()
         }
 
-        private fun Test.substituteInstrumentedClassesToClasspath(dirWithInstrumentedClasses: File) {
+        private fun Test.substituteInstrumentedClassesToClasspath() {
             classpath -= project.files(project.getMainSourceSetClassFilesDir())
-            classpath += project.files(dirWithInstrumentedClasses)
+            classpath += offlinsContext.instrumentedClassesTask.map {
+                project.files(it.instrumentedClassesDir)
+            }.get()
         }
 
         private fun Test.removeFromClasspathUninstrumentedJars() {
             val newFileCollection: FileCollection = project.files()
-            val recursiveDeps: Sequence<Project> = recursiveOnProjectDependencies(project).asSequence() + project
-            classpath -= recursiveDeps
+            classpath -= configurationContext.projectRecursiveDependencies.get()
+                .asSequence()
                 .map { it.tasks.getByName(JavaPlugin.JAR_TASK_NAME) }
                 .map { it.outputs.files }
                 .fold(newFileCollection) { allFiles, nextPart ->
@@ -101,5 +124,10 @@ internal class TestTasksConfigurator {
         }
 
     }
+
+    private class ConfigurationContext(
+        val offlinsContext: OfflinsContext,
+        val projectRecursiveDependencies: Provider<Set<Project>>
+    )
 
 }

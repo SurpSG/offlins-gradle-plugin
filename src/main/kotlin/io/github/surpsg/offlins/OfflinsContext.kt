@@ -1,5 +1,6 @@
 package io.github.surpsg.offlins
 
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.provider.ListProperty
@@ -21,7 +22,7 @@ internal class OfflinsContext(
 }
 
 internal data class OfflinsConfigurations(
-    val jacocoConfiguration: Configuration,
-    val jacocoRuntimeConfiguration: Configuration,
-    val jacocoInstrumentedConfiguration: Configuration
+    val jacocoConfiguration: NamedDomainObjectProvider<Configuration>,
+    val jacocoRuntimeConfiguration: NamedDomainObjectProvider<Configuration>,
+    val jacocoInstrumentedConfiguration: NamedDomainObjectProvider<Configuration>
 )

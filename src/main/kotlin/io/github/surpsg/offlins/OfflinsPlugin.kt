@@ -3,6 +3,7 @@ package io.github.surpsg.offlins
 import io.github.surpsg.offlins.InstrumentClassesOfflineTask.Companion.INSTRUMENT_CLASSES_TASK
 import io.github.surpsg.offlins.InstrumentedJar.Companion.ASSEMBLE_INSTRUMENTED_JAR_TASK
 import io.github.surpsg.offlins.OfflinsJacocoReport.Companion.GENERATE_JACOCO_REPORTS_TASK
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
@@ -10,6 +11,7 @@ import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
 import org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
 class OfflinsPlugin : Plugin<Project> {
@@ -41,7 +43,7 @@ class OfflinsPlugin : Plugin<Project> {
                 JACOCO_RUNTIME_CONFIGURATION,
                 jacocoAgentDependency(jacocoVersion)
             ),
-            jacocoInstrumentedConfiguration = configurations.create(JACOCO_INSTRUMENTED_CONFIGURATION) {
+            jacocoInstrumentedConfiguration = configurations.register(JACOCO_INSTRUMENTED_CONFIGURATION) {
                 log(msg = "Created configuration '$JACOCO_INSTRUMENTED_CONFIGURATION' in project '${project.name}'")
                 it.isCanBeConsumed = true
                 it.isCanBeResolved = false
@@ -58,9 +60,8 @@ class OfflinsPlugin : Plugin<Project> {
     private fun Project.addConfigurationWithDependency(
         configurationName: String,
         jacocoDependency: Provider<JacocoDependency>
-    ): Configuration {
-        // TODO .register instead of .create ?
-        val configuration: Configuration = configurations.create(configurationName)
+    ): NamedDomainObjectProvider<Configuration> {
+        val configuration: NamedDomainObjectProvider<Configuration> = configurations.register(configurationName)
         when {
             gradleVersion >= GRADLE_6_8 -> {
                 dependencies.add(
@@ -77,8 +78,7 @@ class OfflinsPlugin : Plugin<Project> {
     }
 
     private fun createInstrumentedClassesTask(context: OfflinsContext) {
-        // TODO use .register(...) instead of .create(...) ?
-        val instrumentClassesTask: InstrumentClassesOfflineTask = context.project.tasks.create(
+        val instrumentClassesTask: TaskProvider<InstrumentClassesOfflineTask> = context.project.tasks.register(
             INSTRUMENT_CLASSES_TASK,
             InstrumentClassesOfflineTask::class.java
         )
@@ -91,8 +91,7 @@ class OfflinsPlugin : Plugin<Project> {
             it.instrumentedClassesDir
         }
         with(context.project) {
-            // TODO use .register(...) instead of .create(...) ?
-            val instrumentedJar = tasks.create(ASSEMBLE_INSTRUMENTED_JAR_TASK, InstrumentedJar::class.java) { jar ->
+            val instrumentedJar = tasks.register(ASSEMBLE_INSTRUMENTED_JAR_TASK, InstrumentedJar::class.java) { jar ->
                 jar.dependsOn += INSTRUMENT_CLASSES_TASK
                 jar.from(instrumentedClassesDir)
             }
@@ -106,7 +105,7 @@ class OfflinsPlugin : Plugin<Project> {
     }
 
     private fun createCoverageReportTask(context: OfflinsContext) {
-        context.project.tasks.create( // TODO use .register(...) instead of .create(...) ?
+        context.project.tasks.register(
             GENERATE_JACOCO_REPORTS_TASK,
             OfflinsJacocoReport::class.java
         ) {
