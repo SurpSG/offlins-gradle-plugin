@@ -6,6 +6,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.CollectionCallbackActionDecorator
 import org.gradle.api.internal.project.IsolatedAntBuilder
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.reporting.DirectoryReport
 import org.gradle.api.reporting.SingleFileReport
@@ -20,12 +21,13 @@ import javax.inject.Inject
 open class OfflinsJacocoReport : DefaultTask() {
 
     @get:Input
-    val execDataFile: Property<Path> = project.objects.property(Path::class.java)
+    val execDataFiles: ListProperty<Path> = project.objects.listProperty(Path::class.java)
 
     @get:Input
     val reportsExtension: Property<ReportsExtension> = project.objects.property(ReportsExtension::class.java)
 
     init {
+        group = "verification"
         description = "Generates JaCoCo code coverage reports"
     }
 
@@ -59,7 +61,7 @@ open class OfflinsJacocoReport : DefaultTask() {
             project.name,
             project.files(project.getMainSourceSetClassFilesDir()).filter { it.exists() },
             project.getMainSourceSetSources().filter { it.exists() },
-            project.files(execDataFile).filter { it.exists() },
+            project.files(execDataFiles).filter { it.exists() },
             jacocoReport
         )
     }

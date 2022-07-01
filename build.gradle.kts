@@ -11,9 +11,6 @@ plugins {
     alias(deps.plugins.detekt)
 }
 
-group = "io.github.surpsg"
-version = "0.1.0"
-
 repositories {
     mavenCentral()
 }

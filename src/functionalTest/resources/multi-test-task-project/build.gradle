@@ -1,0 +1,31 @@
+plugins {
+    id 'java'
+    id 'jvm-test-suite'
+    id 'io.github.surpsg.offlins'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13'
+}
+
+sourceSets {
+    integrationTests {
+        java.srcDir file('src/integrationTests/java')
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output + compileClasspath
+    }
+}
+
+configurations {
+    integrationTestsImplementation.extendsFrom testImplementation
+    integrationTestsRuntimeOnly.extendsFrom runtimeOnly
+}
+
+task integrationTests(type: Test) {
+    testClassesDirs = sourceSets.integrationTests.output.classesDirs
+    classpath = sourceSets.integrationTests.runtimeClasspath
+}
+check.dependsOn integrationTests
