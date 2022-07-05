@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'jvm-test-suite'
+    id 'io.github.surpsg.offlins'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13'
+}
+
+sourceSets {
+    test {
+        java {
+            srcDirs = ['src/test', 'src/integrationTests']
+        }
+    }
+}
+
+task intTest(type: Test, dependsOn: [testClasses]) {
+    filter {
+        setExcludePatterns('*UnitTest')
+    }
+}
+
+task unitTest(type: Test, dependsOn: [testClasses]) {
+    filter {
+        setExcludePatterns('*IntTest')
+    }
+}
+
+check.dependsOn(intTest, unitTest)
