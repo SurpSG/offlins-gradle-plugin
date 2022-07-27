@@ -1,5 +1,9 @@
 # Offlins Gradle plugin Changelog
 
+## 0.2.1
+
+- Fixed plugin failure when project has test tasks that use the same source set
+
 ## 0.2.0
 
 - Now `Offlins` plugin collects coverage from all test tasks

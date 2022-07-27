@@ -1,6 +1,5 @@
 package io.github.surpsg
 
-import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -16,21 +15,30 @@ class CollectCoverageCustomTestTasksTest : BaseOfflinsTest() {
     }
 
     @Test
-    fun `offlins must collect coverage from custom test tasks`() {
+    fun `offlins must collect coverage from custom unit test task`() {
         // run
-        gradleRunner.withArguments("intTest", "unitTest")
-            .build()
-            .assertThatTaskStatusIs("unitTest", TaskOutcome.SUCCESS)
-            .assertThatTaskStatusIs("intTest", TaskOutcome.SUCCESS)
+        gradleRunner.runTask("unitTest")
 
         // assert
         rootProjectDir.assertModuleHasCoverageDataForClasses(
-            "build/jacoco/unitTest.exec",
-            ClassCov("com/java/test/Class1", Covered.PARTIALLY)
+            "mod1/build/jacoco/unitTest.exec",
+            ClassCov("com/java/test/Class1", Covered.FULLY),
+            ClassCov("com/test/mod2/Module2", Covered.FULLY),
+            ClassCov("com/test/mod3/Module3", Covered.FULLY)
         )
+    }
+
+    @Test
+    fun `offlins must collect coverage from custom integration test task`() {
+        // run
+        gradleRunner.runTask("intTest")
+
+        // assert
         rootProjectDir.assertModuleHasCoverageDataForClasses(
-            "build/jacoco/intTest.exec",
-            ClassCov("com/java/test/Class1", Covered.PARTIALLY)
+            "mod1/build/jacoco/intTest.exec",
+            ClassCov("com/java/test/Class1", Covered.PARTIALLY),
+            ClassCov("com/test/mod2/Module2", Covered.FULLY),
+            ClassCov("com/test/mod3/Module3", Covered.FULLY)
         )
     }
 

@@ -1,0 +1,5 @@
+rootProject.name = 'custom-test-tasks-with-filters-project'
+include 'mod1'
+include 'mod2'
+include 'mod3'
+

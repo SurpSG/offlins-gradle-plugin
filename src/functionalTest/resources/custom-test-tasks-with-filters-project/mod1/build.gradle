@@ -1,0 +1,31 @@
+plugins {
+    id 'io.github.surpsg.offlins'
+}
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":mod2")
+    testImplementation 'junit:junit:4.13'
+}
+
+sourceSets {
+    test {
+        java {
+            srcDirs = ['src/test', 'src/integrationTests']
+        }
+    }
+}
+
+task intTest(type: Test, dependsOn: [testClasses]) {
+    filter {
+        setExcludePatterns('*UnitTest')
+    }
+}
+
+task unitTest(type: Test, dependsOn: [testClasses]) {
+    filter {
+        setExcludePatterns('*IntTest')
+    }
+}
