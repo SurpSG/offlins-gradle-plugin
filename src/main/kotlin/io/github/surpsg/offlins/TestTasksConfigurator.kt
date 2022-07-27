@@ -3,7 +3,6 @@ package io.github.surpsg.offlins
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Dependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Provider
@@ -22,8 +21,6 @@ internal class TestTasksConfigurator {
         testTasks.configureEach { testTask ->
             configureTestTask(configurationContext, testTask)
         }
-
-        setTestsToDependOnInstrumentedJars(project, testTasks)
     }
 
     private fun createConfigurationContext(offlinsContext: OfflinsContext): ConfigurationContext {
@@ -62,27 +59,6 @@ internal class TestTasksConfigurator {
 
     private fun Project.testTasks(): TaskCollection<Test> {
         return project.tasks.withType(Test::class.java)
-    }
-
-    private fun setTestsToDependOnInstrumentedJars(
-        proj: Project,
-        testTasks: TaskCollection<Test>
-    ) = proj.afterEvaluate { project ->
-        val onProjectDeps: Set<Dependency> = getOnProjectDependencies(project).asSequence()
-            .map { onProjDep ->
-                project.createOnProjectDependency(
-                    onProjDep.name,
-                    OfflinsPlugin.JACOCO_INSTRUMENTED_CONFIGURATION
-                )
-            }
-            .toSet()
-
-        testTasks.configureEach { testTask ->
-            val testTaskImplementation = "${testTask.name}Implementation"
-            onProjectDeps.forEach { dependency ->
-                project.dependencies.add(testTaskImplementation, dependency)
-            }
-        }
     }
 
     private fun Test.execFileLocation(): Path = Paths.get(

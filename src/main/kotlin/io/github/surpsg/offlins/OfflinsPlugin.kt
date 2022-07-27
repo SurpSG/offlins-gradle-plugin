@@ -7,9 +7,9 @@ import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.plugins.JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
-import org.gradle.api.plugins.JavaPlugin.RUNTIME_ONLY_CONFIGURATION_NAME
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
@@ -17,11 +17,12 @@ import java.io.File
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
-        if (project.gradleVersion < GRADLE_5_1) {
-            throw IllegalStateException("Gradle ${project.gradle.gradleVersion} is not supported.")
+        if (gradleVersion < GRADLE_5_1) {
+            throw IllegalStateException("Gradle ${gradle.gradleVersion} is not supported.")
         }
 
         val offlinsContext: OfflinsContext = createOfflinsConfigurations()
+        setDependencyOnInstrumentedSubprojects()
 
         createInstrumentedClassesTask(offlinsContext)
         createInstrumentedJarTask(offlinsContext)
@@ -44,17 +45,26 @@ class OfflinsPlugin : Plugin<Project> {
                 jacocoAgentDependency(jacocoVersion)
             ),
             jacocoInstrumentedConfiguration = configurations.register(JACOCO_INSTRUMENTED_CONFIGURATION) {
-                log(msg = "Created configuration '$JACOCO_INSTRUMENTED_CONFIGURATION' in project '${project.name}'")
-                it.isCanBeConsumed = true
-                it.isCanBeResolved = false
-                it.extendsFrom(
-                    configurations.getByName(IMPLEMENTATION_CONFIGURATION_NAME),
-                    configurations.getByName(RUNTIME_ONLY_CONFIGURATION_NAME)
-                )
+                configurations.getByName(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME).extendsFrom(it)
             }
         )
 
         return OfflinsContext(project, offlinsExtension, configurations)
+    }
+
+    private fun Project.setDependencyOnInstrumentedSubprojects() = afterEvaluate { project ->
+        val onProjectDeps: Set<Dependency> = getOnProjectDependencies(project).asSequence()
+            .map { onProjDep ->
+                project.createOnProjectDependency(
+                    onProjDep.name,
+                    JACOCO_INSTRUMENTED_CONFIGURATION
+                )
+            }
+            .toSet()
+
+        onProjectDeps.forEach { dependency ->
+            project.dependencies.add(JACOCO_INSTRUMENTED_CONFIGURATION, dependency)
+        }
     }
 
     private fun Project.addConfigurationWithDependency(

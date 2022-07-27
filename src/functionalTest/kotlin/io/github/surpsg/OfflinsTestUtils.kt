@@ -18,7 +18,6 @@ fun buildGradleRunner(
         })
         .apply {
             // gradle testkit jacoco support
-            // gradle testkit jacoco support
             javaClass.classLoader.getResourceAsStream("testkit-gradle.properties")?.use { inputStream ->
                 File(projectDir, "gradle.properties").outputStream().use { outputStream ->
                     inputStream.copyTo(outputStream)
@@ -27,7 +26,7 @@ fun buildGradleRunner(
         }
 }
 
-fun GradleRunner.runTask(task: String): BuildResult = withArguments(task, "-si").build()
+fun GradleRunner.runTask(task: String): BuildResult = withArguments(task, "-s").build()
 
 fun BuildResult.assertOutputContainsStrings(vararg expectedString: String): BuildResult {
     assertThat(output).contains(*expectedString)
