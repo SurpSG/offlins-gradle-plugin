@@ -1,0 +1,7 @@
+plugins {
+    id 'io.github.surpsg.offlins'
+}
+
+dependencies {
+    implementation project(":mod3")
+}
