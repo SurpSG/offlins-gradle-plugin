@@ -18,17 +18,20 @@ class GradleVersion(
     }
 
     private fun toComparableInt(value: String): Int {
-        return normalize(value).splitToSequence(".")
+        return normalizeToThreeDigitNumber(value).splitToSequence(".")
             .map { it.toInt() }
             .fold(0) { sum, next ->
                 sum * VERSION_NUMBER_WEIGHT + next
             }
     }
 
-    private fun normalize(value: String) = if (value.count { it == '.' } == 1) {
-        "$value.0"
-    } else {
-        value
+    private fun normalizeToThreeDigitNumber(value: String): String {
+        val numericVersionPart = value.substringBefore("-")
+        return if (numericVersionPart.count { it == '.' } == 1) {
+            "$numericVersionPart.0"
+        } else {
+            numericVersionPart
+        }
     }
 
     private companion object {
