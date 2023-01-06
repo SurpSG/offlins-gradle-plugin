@@ -24,6 +24,13 @@ testing.suites {
             implementation(project())
         }
 
+        targets.all {
+            testTask.configure {
+                maxParallelForks = 4
+                systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+            }
+        }
+
     }
 
 }

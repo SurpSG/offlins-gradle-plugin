@@ -1,12 +1,12 @@
 package io.github.surpsg
 
-import org.assertj.core.util.Files
 import org.gradle.testkit.runner.GradleRunner
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 abstract class BaseOfflinsTest {
 
-//    @TempDir
+    @TempDir
     lateinit var tempTestDir: File
 
     lateinit var rootProjectDir: File
@@ -17,7 +17,6 @@ abstract class BaseOfflinsTest {
      * should be invoked in @Before test class method
      */
     fun initializeGradleTest() {
-        tempTestDir = Files.newTemporaryFolder()
         rootProjectDir = tempTestDir.copyDirFromResources<BaseOfflinsTest>(resourceTestProject())
         buildFile = rootProjectDir.resolve("build.gradle")
 
