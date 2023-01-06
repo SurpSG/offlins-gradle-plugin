@@ -38,7 +38,9 @@ private fun AbstractObjectAssert<*, ExecutionDataStore>.assertContainsCoverageFo
     extracting { it.contents }
         .asInstanceOf(list(ExecutionData::class.java))
         .isNotEmpty
-        .flatExtracting(ExecutionData::getName)
+        .flatExtracting<String> {
+            listOf(it.name)
+        }
         .containsExactlyInAnyOrder(*expectedCoverages.map { it.className }.toTypedArray())
     return this
 }

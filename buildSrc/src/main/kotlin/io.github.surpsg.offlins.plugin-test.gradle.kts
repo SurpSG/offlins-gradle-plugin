@@ -1,4 +1,3 @@
-import gradle.kotlin.dsl.accessors._493df1a2873b25a073d5f01feaf1ba6c.testing
 import org.gradle.kotlin.dsl.base
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.`java-gradle-plugin`

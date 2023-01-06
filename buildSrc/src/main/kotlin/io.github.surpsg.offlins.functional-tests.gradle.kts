@@ -21,7 +21,7 @@ testing.suites {
         }
 
         dependencies {
-            implementation(project)
+            implementation(project())
         }
 
     }

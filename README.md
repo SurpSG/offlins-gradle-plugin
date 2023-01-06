@@ -23,7 +23,7 @@ The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/io
 
 ```groovy
 plugins {
-  id "io.github.surpsg.offlins" version "0.1.0"
+  id "io.github.surpsg.offlins" version "0.2.1"
 }
 ```
 
@@ -33,7 +33,7 @@ plugins {
 
 ```kotlin
 plugins {
-  id("io.github.surpsg.offlins") version "0.1.0"
+  id("io.github.surpsg.offlins") version "0.2.1"
 }
 ```
 

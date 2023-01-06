@@ -17,7 +17,7 @@ testing {
         integrationTest(JvmTestSuite) {
             useJUnitJupiter()
             dependencies {
-                implementation project
+                implementation project()
             }
             sources {
                 java {

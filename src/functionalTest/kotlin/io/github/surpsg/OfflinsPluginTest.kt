@@ -142,7 +142,14 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["5.1", "5.6.4", "6.9.1", "7.4.2"])
+    @ValueSource(strings = [
+        "5.1",
+        "5.6.4",
+        "6.9.1",
+        "7.4.2",
+        "7.6",
+        "8.0-rc-1"
+    ])
     fun `assembleInstrumentedJar task must create jar with instrumented classes`(gradleVersion: String) {
         // setup
         val instrumentedJarFileName = "$TEST_PROJECT_RESOURCE_NAME-$INSTRUMENTED_JAR_SUFFIX.jar"
