@@ -1,3 +1,5 @@
+package io.github.surpsg.offlins
+
 import org.gradle.kotlin.dsl.base
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.`java-gradle-plugin`
@@ -9,7 +11,7 @@ plugins {
     `jvm-test-suite`
     `java-gradle-plugin`
 
-    id("io.github.surpsg.offlins.functional-tests")
+    id("io.github.surpsg.offlins.functional-tests-conventions")
     id("io.github.surpsg.offlins.diff-coverage-conventions")
 }
 

@@ -1,3 +1,5 @@
+package io.github.surpsg.offlins
+
 plugins {
     id("com.form.diff-coverage")
 }

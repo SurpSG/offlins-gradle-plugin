@@ -5,7 +5,7 @@ plugins {
     alias(deps.plugins.pluginPublish)
     `maven-publish`
 
-    id("io.github.surpsg.offlins.plugin-test")
+    id("io.github.surpsg.offlins.plugin-test-conventions")
     alias(deps.plugins.detekt)
 }
 
