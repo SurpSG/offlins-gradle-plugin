@@ -17,7 +17,7 @@ class CollectCoverageLegacyGradleTest : BaseOfflinsTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["5.1", "5.6.4", "6.9.1"])
+    @ValueSource(strings = ["6.1", "6.9.4"])
     fun `test task must collect coverage data`(gradleVersion: String) {
         // run
         gradleRunner

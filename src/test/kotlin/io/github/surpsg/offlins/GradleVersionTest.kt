@@ -3,6 +3,7 @@ package io.github.surpsg.offlins
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 
 class GradleVersionTest {
@@ -13,10 +14,19 @@ class GradleVersionTest {
             .isGreaterThan(GradleVersion("7.3.2"))
     }
 
-    @Test
-    fun `gradle version 7-4-2 must be greater than 7-4-1`() {
-        assertThat(GradleVersion("7.4.2"))
-            .isGreaterThan(GradleVersion("7.4.1"))
+    @ParameterizedTest
+    @CsvSource(
+        value = [
+            "7.4.2, 7.4.1",
+            "8.0-rc-5, 7.4.1",
+        ]
+    )
+    fun `newer gradle version must be greater than older version`(
+        greaterVersion: String,
+        lowerVersion: String
+    ) {
+        assertThat(GradleVersion(greaterVersion))
+            .isGreaterThan(GradleVersion(lowerVersion))
     }
 
     @Test

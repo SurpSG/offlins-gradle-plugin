@@ -2,7 +2,7 @@ package io.github.surpsg
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.MethodSource
 
 class CollectCoverageMultiModuleTest : BaseOfflinsTest() {
 
@@ -16,7 +16,7 @@ class CollectCoverageMultiModuleTest : BaseOfflinsTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["7.4.2", "6.9.1", "5.6.4"])
+    @MethodSource("supportedGradleVersions")
     fun `test task must collect coverage data`(gradleVersion: String) {
         // run
         gradleRunner
