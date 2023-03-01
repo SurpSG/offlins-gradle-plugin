@@ -1,28 +1,10 @@
 plugins {
-    kotlin("jvm")
-
-    `java-gradle-plugin`
-    alias(deps.plugins.pluginPublish)
-    `maven-publish`
-
-    id("io.github.surpsg.offlins.plugin-test-conventions")
+    id("io.github.surpsg.offlins.gradle-plugin-conventions")
     alias(deps.plugins.detekt)
 }
 
 repositories {
     mavenCentral()
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
 }
 
 gradlePlugin {
