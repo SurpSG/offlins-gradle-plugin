@@ -13,6 +13,7 @@ fun buildGradleRunner(
     return GradleRunner.create()
         .withPluginClasspath()
         .withProjectDir(projectRoot)
+        .withDebug(true)
         .withTestKitDir(projectRoot.resolve("TestKitDir").apply {
             mkdir()
         })

@@ -1,7 +1,5 @@
 rootProject.name = "offlins-conventions"
 
-enableFeaturePreview("VERSION_CATALOGS")
-
 dependencyResolutionManagement {
     repositories {
         mavenCentral()

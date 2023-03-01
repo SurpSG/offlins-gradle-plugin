@@ -11,7 +11,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.MethodSource
 import java.io.File
 import java.nio.file.Paths
 import java.util.zip.ZipFile
@@ -32,8 +32,8 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     }
 
     @Test
-    fun `applying of plugin must fail if gradle version is less than 5-1`() {
-        val gradleVersion = "5.0"
+    fun `applying of plugin must fail if gradle version is less than 6-1`() {
+        val gradleVersion = "6.0"
 
         gradleRunner
             .withGradleVersion(gradleVersion)
@@ -142,14 +142,7 @@ class OfflinsPluginTest : BaseOfflinsTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [
-        "5.1",
-        "5.6.4",
-        "6.9.1",
-        "7.4.2",
-        "7.6",
-        "8.0-rc-1"
-    ])
+    @MethodSource("supportedGradleVersions")
     fun `assembleInstrumentedJar task must create jar with instrumented classes`(gradleVersion: String) {
         // setup
         val instrumentedJarFileName = "$TEST_PROJECT_RESOURCE_NAME-$INSTRUMENTED_JAR_SUFFIX.jar"

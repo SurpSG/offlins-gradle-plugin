@@ -80,19 +80,8 @@ open class OfflinsJacocoReport : DefaultTask() {
         with(jacocoReport) {
             val reportEnabled: Property<Boolean> = offlinsCoverageReport.enabled.convention(true)
             val location: Property<Directory> = offlinsCoverageReport.location.convention(baseReportDir.dir(name))
-            when {
-                project.gradleVersion >= GRADLE_6_1 -> {
-                    required.set(reportEnabled)
-                    outputLocation.set(location)
-                }
-                else -> {
-                    isEnabled = reportEnabled.get()
-                    setDestination(
-                        location.map { it.asFile }
-                    )
-                }
-            }
-
+            required.set(reportEnabled)
+            outputLocation.set(location)
         }
     }
 
@@ -105,18 +94,8 @@ open class OfflinsJacocoReport : DefaultTask() {
         val defaultReportFileName = "$name.${jacocoReport.name}"
         val reportLocation: Property<RegularFile> = offlinsCoverageFileReport.location
             .convention(baseReportDir.file(defaultReportFileName))
-        when {
-            project.gradleVersion >= GRADLE_6_1 -> {
-                jacocoReport.required.set(reportEnabled)
-                jacocoReport.outputLocation.set(reportLocation)
-            }
-            else -> {
-                jacocoReport.isEnabled = reportEnabled.get()
-                jacocoReport.setDestination(
-                    reportLocation.map { it.asFile }
-                )
-            }
-        }
+        jacocoReport.required.set(reportEnabled)
+        jacocoReport.outputLocation.set(reportLocation)
     }
 
     @Inject

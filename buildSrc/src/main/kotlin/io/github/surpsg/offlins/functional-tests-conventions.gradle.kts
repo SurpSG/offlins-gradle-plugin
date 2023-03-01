@@ -1,3 +1,5 @@
+package io.github.surpsg.offlins
+
 import org.gradle.kotlin.dsl.base
 import org.gradle.kotlin.dsl.`jvm-test-suite`
 
@@ -22,6 +24,13 @@ testing.suites {
 
         dependencies {
             implementation(project())
+        }
+
+        targets.all {
+            testTask.configure {
+                maxParallelForks = 4
+                systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+            }
         }
 
     }

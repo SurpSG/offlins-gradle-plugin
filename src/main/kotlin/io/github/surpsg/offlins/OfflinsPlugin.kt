@@ -17,7 +17,7 @@ import java.io.File
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
-        if (gradleVersion < GRADLE_5_1) {
+        if (gradleVersion < GRADLE_6_1) {
             throw IllegalStateException("Gradle ${gradle.gradleVersion} is not supported.")
         }
 
