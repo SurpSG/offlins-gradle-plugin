@@ -1,9 +1,11 @@
 package io.github.surpsg.offlins
 
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
 
 
@@ -13,16 +15,8 @@ fun Project.getMainSourceSetClassFiles(): FileCollection {
     }
 }
 
-fun Project.getMainSourceSetClassFilesDir(): Any {
-    return when {
-        project.gradleVersion >= GRADLE_6_1 -> {
-            getMainSourceSet().java.classesDirectory
-        }
-
-        else -> convention.getPlugin(JavaPluginConvention::class.java)
-            .sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-            .java.outputDir
-    }
+fun Project.getMainSourceSetClassFilesDir(): Provider<Directory> {
+    return getMainSourceSet().java.classesDirectory
 }
 
 fun Project.getMainSourceSetSources(): FileCollection {

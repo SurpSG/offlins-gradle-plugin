@@ -1,5 +1,10 @@
 # Offlins Gradle plugin Changelog
 
+## 0.3.0
+
+- Support Gradle 8
+- Min supported Gradle version was changed from `5.1` to `6.1`
+
 ## 0.2.1
 
 - Fixed plugin failure when project has test tasks that use the same source set

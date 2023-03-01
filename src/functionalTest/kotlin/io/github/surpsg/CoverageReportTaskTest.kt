@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.MethodSource
 
 
 class CoverageReportTaskTest : BaseOfflinsTest() {
@@ -20,9 +20,7 @@ class CoverageReportTaskTest : BaseOfflinsTest() {
     }
 
     @ParameterizedTest
-    @ValueSource(
-        strings = ["5.1", "5.6.4", "6.9.1", "7.4.2"]
-    )
+    @MethodSource("supportedGradleVersions")
     fun `coverageReport task must generate html report`(gradleVersion: String) {
         val htmlLocation = "build/custom/jacocoReportDir"
         val csvLocation = "build/custom/custom_csv.csv"

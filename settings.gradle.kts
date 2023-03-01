@@ -1,7 +1,5 @@
 rootProject.name = "offlins-gradle-plugin"
 
-enableFeaturePreview("VERSION_CATALOGS")
-
 dependencyResolutionManagement {
     versionCatalogs {
         create("deps") {

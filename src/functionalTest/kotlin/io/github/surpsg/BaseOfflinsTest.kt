@@ -25,4 +25,17 @@ abstract class BaseOfflinsTest {
 
     abstract fun resourceTestProject(): String
 
+
+    companion object {
+
+        @JvmStatic
+        fun supportedGradleVersions(): List<String> {
+            return listOf(
+                "6.1",
+                "6.9.4",
+                "7.6.1",
+                "8.0.1"
+            )
+        }
+    }
 }
