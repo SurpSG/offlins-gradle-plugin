@@ -1,3 +1,5 @@
+package io.github.surpsg.offlins
+
 import org.gradle.kotlin.dsl.base
 import org.gradle.kotlin.dsl.`jvm-test-suite`
 
