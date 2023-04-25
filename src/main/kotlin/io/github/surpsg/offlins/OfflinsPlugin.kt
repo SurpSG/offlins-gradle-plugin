@@ -132,7 +132,7 @@ class OfflinsPlugin : Plugin<Project> {
     }
 
     companion object {
-        const val DEFAULT_JACOCO_VERSION = "0.8.8"
+        const val DEFAULT_JACOCO_VERSION = "0.8.10"
 
         const val OFFLINS_EXTENSION = "offlinsCoverage"
 
