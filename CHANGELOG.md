@@ -1,5 +1,8 @@
 # Offlins Gradle plugin Changelog
 
+## <NEXT-RELEASE>
+- Changed default JaCoCo agent version to [0.8.10](https://github.com/jacoco/jacoco/releases/tag/v0.8.10)
+
 ## 0.3.0
 
 - Support Gradle 8
