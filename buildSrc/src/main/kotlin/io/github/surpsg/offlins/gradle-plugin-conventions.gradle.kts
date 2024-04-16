@@ -1,9 +1,5 @@
 package io.github.surpsg.offlins
 
-import org.gradle.jvm.toolchain.JavaLanguageVersion
-import org.gradle.kotlin.dsl.base
-import org.gradle.kotlin.dsl.`java-gradle-plugin`
-import org.gradle.kotlin.dsl.`jvm-test-suite`
 import org.gradle.kotlin.dsl.kotlin
 
 plugins {

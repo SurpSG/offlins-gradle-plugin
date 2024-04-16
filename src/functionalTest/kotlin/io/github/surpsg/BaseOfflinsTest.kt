@@ -31,10 +31,9 @@ abstract class BaseOfflinsTest {
         @JvmStatic
         fun supportedGradleVersions(): List<String> {
             return listOf(
-                "6.1",
                 "6.9.4",
                 "7.6.1",
-                "8.0.1"
+                "8.7"
             )
         }
     }
