@@ -2,6 +2,7 @@
 
 ## 0.4.0
 
+- Updated default JaCoCo version to `0.8.12`
 - Updated kotlin dependencies to `1.9.20`
 - Official support of Gradle 8.7
 - Min supported Gradle version was changed from `6.1` to `6.9.4`
