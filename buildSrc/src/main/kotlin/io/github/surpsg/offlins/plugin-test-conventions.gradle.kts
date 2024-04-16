@@ -12,7 +12,7 @@ plugins {
     `java-gradle-plugin`
 
     id("io.github.surpsg.offlins.functional-tests-conventions")
-    id("io.github.surpsg.offlins.diff-coverage-conventions")
+    id("io.github.surpsg.offlins.delta-coverage-conventions")
 }
 
 testing.suites {

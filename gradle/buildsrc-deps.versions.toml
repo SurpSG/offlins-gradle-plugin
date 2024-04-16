@@ -1,5 +1,5 @@
 [libraries]
 kotlinJvm = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version = "1.9.20" }
 pluginPublish = { module = "com.gradle.publish:plugin-publish-plugin", version = "1.1.0" }
-diffCoverage = { module = "com.github.form-com.diff-coverage-gradle:diff-coverage", version = "0.9.5" }
+deltaCoverage = { module = "io.github.surpsg:delta-coverage-gradle", version = "2.3.0" }
 jacocoTestkit = { module = "pl.droidsonroids.gradle.jacoco:pl.droidsonroids.gradle.jacoco", version = "1.0.12" }
