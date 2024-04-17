@@ -7,6 +7,6 @@ dependencies {
     implementation(kotlin("gradle-plugin"))
     implementation(buildDeps.pluginPublish)
 
-    implementation(buildDeps.diffCoverage)
+    implementation(buildDeps.deltaCoverage)
     implementation(buildDeps.jacocoTestkit)
 }
