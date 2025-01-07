@@ -17,7 +17,7 @@ import java.io.File
 class OfflinsPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = with(project) {
-        if (gradleVersion < GRADLE_6_1) {
+        if (gradleVersion < GRADLE_8_11) {
             throw IllegalStateException("Gradle ${gradle.gradleVersion} is not supported.")
         }
 
@@ -72,17 +72,10 @@ class OfflinsPlugin : Plugin<Project> {
         jacocoDependency: Provider<JacocoDependency>
     ): NamedDomainObjectProvider<Configuration> {
         val configuration: NamedDomainObjectProvider<Configuration> = configurations.register(configurationName)
-        when {
-            gradleVersion >= GRADLE_6_8 -> {
-                dependencies.add(
-                    configuration.name,
-                    jacocoDependency.map { it.buildDependency(dependencies) }
-                )
-            }
-            else -> afterEvaluate {
-                dependencies.add(configuration.name, jacocoDependency.get().buildDependency(dependencies))
-            }
-        }
+        dependencies.add(
+            configuration.name,
+            jacocoDependency.map { it.buildDependency(dependencies) }
+        )
         log(msg = "Created configuration '$configurationName' in project '${project.name}'")
         return configuration
     }
