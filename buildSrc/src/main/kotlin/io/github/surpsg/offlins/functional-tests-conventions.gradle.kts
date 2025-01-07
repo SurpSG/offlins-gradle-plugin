@@ -1,5 +1,6 @@
 package io.github.surpsg.offlins
 
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.kotlin.dsl.base
 import org.gradle.kotlin.dsl.`jvm-test-suite`
 
@@ -28,15 +29,21 @@ testing.suites {
 
         targets.all {
             testTask.configure {
-                outputs.upToDateWhen { false }
+                outputs.apply {
+                    upToDateWhen { false }
+                    cacheIf { false }
+                }
 
                 description = "Runs the functional tests."
                 group = "verification"
 
-                testLogging.showStandardStreams = true
                 maxParallelForks = 4
 
                 systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+                testLogging {
+                    events(TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.PASSED)
+                    showStandardStreams = true
+                }
             }
         }
 

@@ -4,7 +4,6 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFile
-import org.gradle.api.internal.CollectionCallbackActionDecorator
 import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -12,9 +11,11 @@ import org.gradle.api.reporting.DirectoryReport
 import org.gradle.api.reporting.SingleFileReport
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.internal.Describables
 import org.gradle.internal.jacoco.AntJacocoReport
 import org.gradle.internal.jacoco.JacocoReportsContainerImpl
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.testing.jacoco.tasks.JacocoReportsContainer
 import java.nio.file.Path
 import javax.inject.Inject
 
@@ -26,9 +27,16 @@ open class OfflinsJacocoReport : DefaultTask() {
     @get:Input
     val reportsExtension: Property<ReportsExtension> = project.objects.property(ReportsExtension::class.java)
 
+    private val reports: JacocoReportsContainer
+
     init {
         group = "verification"
         description = "Generates JaCoCo code coverage reports"
+
+        reports = project.objects.newInstance(
+            JacocoReportsContainerImpl::class.java,
+            Describables.quoted("Task", identityPath),
+        )
     }
 
     @TaskAction
@@ -40,37 +48,31 @@ open class OfflinsJacocoReport : DefaultTask() {
             }
         )
 
-        val jacocoReport: JacocoReportsContainerImpl = buildJacocoReportsContainer()
         configureHtmlReport(
             reportsDir,
             reportsExtension.map { it.html }.get(),
-            jacocoReport.html
+            reports.html
         )
         configureFileReport(
             reportsDir,
             reportsExtension.map { it.xml }.get(),
-            jacocoReport.xml
+            reports.xml
         )
         configureFileReport(
             reportsDir,
             reportsExtension.map { it.csv }.get(),
-            jacocoReport.csv
+            reports.csv
         )
         AntJacocoReport(getAntBuilder()).execute(
             project.configurations.getAt(OfflinsPlugin.JACOCO_CONFIGURATION),
             project.name,
             project.files(project.getMainSourceSetClassFilesDir()).filter { it.exists() },
             project.getMainSourceSetSources().filter { it.exists() },
+            null,
             project.files(execDataFiles).filter { it.exists() },
-            jacocoReport
+            reports
         )
     }
-
-    private fun buildJacocoReportsContainer(): JacocoReportsContainerImpl = getInstantiator().newInstance(
-        JacocoReportsContainerImpl::class.java,
-        this,
-        CollectionCallbackActionDecorator.NOOP
-    )
 
     private fun configureHtmlReport(
         baseReportDir: DirectoryProperty,
