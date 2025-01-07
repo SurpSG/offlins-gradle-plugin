@@ -1,7 +1,7 @@
 package io.github.surpsg.offlins
 
 plugins {
-    id("io.github.surpsg.delta-coverage")
+    id("io.github.gw-kit.delta-coverage")
 }
 
 deltaCoverageReport {
@@ -18,6 +18,10 @@ deltaCoverageReport {
         fullCoverageReport = true
     }
 
-    violationRules.failIfCoverageLessThan(0.9)
+    reportViews {
+        val aggregated by getting {
+            violationRules.failIfCoverageLessThan(0.9)
+        }
+    }
 }
 
