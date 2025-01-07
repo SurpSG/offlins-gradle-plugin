@@ -2,9 +2,7 @@ package io.github.surpsg.offlins
 
 import org.gradle.api.Project
 
-val GRADLE_6_1 = GradleVersion("6.1")
-val GRADLE_6_8 = GradleVersion("6.8")
-val GRADLE_7_1 = GradleVersion("7.1")
+val GRADLE_8_11 = GradleVersion("8.11")
 
 class GradleVersion(
     value: String

@@ -1,5 +1,13 @@
 # Offlins Gradle plugin Changelog
 
+## 0.5.0
+- Official support of Gradle 8.11 and 8.12
+- Updated default JaCoCo version to `0.8.12`
+- Updated kotlin dependencies to `1.9.20`
+- Min supported Gradle version was changed from `6.1` to `8.11`
+- #35 Fixed issue with `coverageReport` task when the task fails on latest gradle
+
+
 ## 0.4.0
 
 - Updated default JaCoCo version to `0.8.12`
