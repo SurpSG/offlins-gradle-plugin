@@ -17,6 +17,8 @@ Compatibility table:
 
 | Offlins plugin | Gradle              |
 |----------------|---------------------|
+| **0.5.0**      | **6.1** - **8.+**   |
+| **0.4.0**      | **6.1** - **8.+**   |
 | **0.3.0**      | **6.1** - **8.+**   |
 | **0.2.1.+**    | **5.1** - **7.6.+** |
 
@@ -30,7 +32,7 @@ The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/io
 
 ```groovy
 plugins {
-    id "io.github.surpsg.offlins" version "0.3.0"
+    id "io.github.surpsg.offlins" version "0.5.0"
 }
 ```
 
@@ -40,7 +42,7 @@ plugins {
 
 ```kotlin
 plugins {
-    id("io.github.surpsg.offlins") version "0.3.0"
+    id("io.github.surpsg.offlins") version "0.5.0"
 }
 ```
 
@@ -50,18 +52,40 @@ plugins {
 
 All properties are **optional** but have the following defaults:
 
-* JaCoCo version `0.8.8`
+* JaCoCo version `0.8.12`
 * *HTML* report is **enabled** with dafault path `build/reports/jacoco/html`
 * *XML* report is **disabled** with dafault path `build/reports/jacoco/coverageReport.xml`
 * *CSV* report is **disabled** with dafault path `build/reports/jacoco/coverageReport.csv`
 
 <details open>
 
+<summary><b>Kotlin</b></summary>
+
+```kotlin
+configure<io.github.surpsg.offlins.OfflinsExtension> {
+    jacocoVersion = "0.8.7" // Optional. By default `0.8.12`
+
+    reports {
+        html.enabled.set(true) // Optional. By default `true`
+        html.location.set(project.file("build/custom/html")) // Optional. By default `build/reports/jacoco/html`
+
+        xml.enabled.set(true) // Optional. By default `false`
+        xml.location.set(project.file("build/custom/xmlCoverage.xml")) // Optional. By default `build/reports/jacoco/coverageReport.xml`
+
+        csv.enabled.set(true) // Optional. By default `false`
+        csv.location.set(project.file("build/custom/csvCoverage.csv")) // Optional. By default `build/reports/jacoco/coverageReport.csv`    
+    }
+}
+```
+
+</details>
+<details>
 <summary><b>Groovy</b></summary>
+
 
 ```groovy
 offlinsCoverage {
-    jacocoVersion = '0.8.7' // Optional. By default `0.8.8`
+    jacocoVersion = '0.8.7' // Optional. By default `0.8.12`
 
     reports {
         html.enabled.set true // Optional. By default `true`
@@ -74,27 +98,6 @@ offlinsCoverage {
         csv.enabled.set true // Optional. By default `false`
         csv.location.set project.file('build/custom/csvCoverage.csv')
         // Optional. By default `build/reports/jacoco/coverageReport.csv`    
-    }
-}
-```
-
-</details>
-<details>
-<summary><b>Kotlin</b></summary>
-
-```kotlin
-configure<io.github.surpsg.offlins.OfflinsExtension> {
-    jacocoVersion = "0.8.7" // Optional. By default `0.8.8`
-
-    reports {
-        html.enabled.set(true) // Optional. By default `true`
-        html.location.set(project.file("build/custom/html")) // Optional. By default `build/reports/jacoco/html`
-
-        xml.enabled.set(true) // Optional. By default `false`
-        xml.location.set(project.file("build/custom/xmlCoverage.xml")) // Optional. By default `build/reports/jacoco/coverageReport.xml`
-
-        csv.enabled.set(true) // Optional. By default `false`
-        csv.location.set(project.file("build/custom/csvCoverage.csv")) // Optional. By default `build/reports/jacoco/coverageReport.csv`    
     }
 }
 ```
