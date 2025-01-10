@@ -2,6 +2,7 @@ package io.github.surpsg.offlins
 
 import org.gradle.jvm.tasks.Jar
 
+@Deprecated("Why not excluded from the coverage")
 open class InstrumentedJar : Jar() {
 
     init {

@@ -38,13 +38,13 @@ jacoco {
 }
 
 tasks.jacocoTestReport {
-    functionalTestSuite.targets.forEach { suiteTarget ->
-        dependsOn(suiteTarget.testTask)
-    }
-
-    executionData.setFrom(fileTree(buildDir).include("/jacoco/*.exec"))
+//    functionalTestSuite.targets.forEach { suiteTarget ->
+//        dependsOn(suiteTarget.testTask)
+//    }
+//
+//    executionData.setFrom(fileTree(buildDir).include("/jacoco/*.exec"))
     reports {
-        xml.required.set(true)
+//        xml.required.set(true)
         html.required.set(true)
     }
 }
