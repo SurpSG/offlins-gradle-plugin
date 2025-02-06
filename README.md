@@ -17,6 +17,7 @@ Compatibility table:
 
 | Offlins plugin | Gradle              |
 |----------------|---------------------|
+| **0.6.0**      | **8.11** - **8.12** |
 | **0.5.0**      | **8.11** - **8.12** |
 | **0.4.0**      | **6.1** - **8.7**   |
 | **0.3.0**      | **6.1** - **8.7**   |
@@ -32,7 +33,7 @@ The plugin is published to [Gradle plugins](https://plugins.gradle.org/plugin/io
 
 ```groovy
 plugins {
-    id "io.github.surpsg.offlins" version "0.5.0"
+    id "io.github.surpsg.offlins" version "0.6.0"
 }
 ```
 
@@ -42,7 +43,7 @@ plugins {
 
 ```kotlin
 plugins {
-    id("io.github.surpsg.offlins") version "0.5.0"
+    id("io.github.surpsg.offlins") version "0.6.0"
 }
 ```
 
