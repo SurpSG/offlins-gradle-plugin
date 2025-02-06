@@ -32,7 +32,7 @@ abstract class BaseOfflinsTest {
         fun supportedGradleVersions(): List<String> {
             return listOf(
                 "8.11",
-                "8.12", // the latest release or release candidate
+                "8.12.1", // the latest release or release candidate
             )
         }
     }

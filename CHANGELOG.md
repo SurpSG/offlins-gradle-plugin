@@ -1,5 +1,11 @@
 # Offlins Gradle plugin Changelog
 
+## <!-- NEXT RELEASE -->
+- Added option to exclude classes from coverage report
+- Now html report is disabled by default
+- Now xml and csv reports have default names: report.xml and report.csv 
+
+
 ## 0.5.0
 - Official support of Gradle 8.11 and 8.12
 - Updated default JaCoCo version to `0.8.12`

@@ -1,31 +1,49 @@
 package io.github.surpsg.offlins
 
+import io.github.surpsg.offlins.sources.filter.SourceFilter
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFile
+import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.internal.project.IsolatedAntBuilder
-import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.reporting.DirectoryReport
-import org.gradle.api.reporting.SingleFileReport
-import org.gradle.api.tasks.Input
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.Describables
 import org.gradle.internal.jacoco.AntJacocoReport
 import org.gradle.internal.jacoco.JacocoReportsContainerImpl
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.testing.jacoco.tasks.JacocoReportsContainer
-import java.nio.file.Path
 import javax.inject.Inject
 
 open class OfflinsJacocoReport : DefaultTask() {
 
-    @get:Input
-    val execDataFiles: ListProperty<Path> = project.objects.listProperty(Path::class.java)
+    @get:InputFiles
+    val execDataFiles: ConfigurableFileCollection = project.files()
 
-    @get:Input
+    @Internal
     val reportsExtension: Property<ReportsExtension> = project.objects.property(ReportsExtension::class.java)
+
+    @get:OutputDirectory
+    val htmlReport: DirectoryProperty = project.objects.directoryProperty().convention(
+        reportsExtension.flatMap { it.html.location }
+    )
+
+    @get:OutputFile
+    val csvReport: RegularFileProperty = project.objects.fileProperty().convention(
+        reportsExtension.flatMap { it.csv.location }
+    )
+
+    @get:OutputFile
+    val xmlReport: RegularFileProperty = project.objects.fileProperty().convention(
+        reportsExtension.flatMap { it.xml.location }
+    )
 
     private val reports: JacocoReportsContainer
 
@@ -41,63 +59,60 @@ open class OfflinsJacocoReport : DefaultTask() {
 
     @TaskAction
     open fun generate() {
-        val reportsDir: DirectoryProperty = project.objects.directoryProperty()
-        reportsDir.set(
-            project.buildDir.resolve(RELATIVE_REPORT_DIR).apply {
-                mkdirs()
-            }
-        )
+        sequenceOf(
+            "HTML" to ReportsExtension::html,
+            "XML" to ReportsExtension::xml,
+            "CSV" to ReportsExtension::csv,
+        ).forEach { (type, reportGetter) ->
+            reportsExtension.logReportConfiguration(type, reportGetter)
+        }
 
-        configureHtmlReport(
-            reportsDir,
-            reportsExtension.map { it.html }.get(),
-            reports.html
-        )
-        configureFileReport(
-            reportsDir,
-            reportsExtension.map { it.xml }.get(),
-            reports.xml
-        )
-        configureFileReport(
-            reportsDir,
-            reportsExtension.map { it.csv }.get(),
-            reports.csv
-        )
+        configureReports()
+
         AntJacocoReport(getAntBuilder()).execute(
             project.configurations.getAt(OfflinsPlugin.JACOCO_CONFIGURATION),
             project.name,
-            project.files(project.getMainSourceSetClassFilesDir()).filter { it.exists() },
+            buildFilteredClassesCollection(),
             project.getMainSourceSetSources().filter { it.exists() },
             null,
-            project.files(execDataFiles).filter { it.exists() },
+            execDataFiles.filter { it.exists() },
             reports
         )
     }
 
-    private fun configureHtmlReport(
-        baseReportDir: DirectoryProperty,
-        offlinsCoverageReport: CoverageDirReport,
-        jacocoReport: DirectoryReport
-    ) {
-        with(jacocoReport) {
-            val reportEnabled: Property<Boolean> = offlinsCoverageReport.enabled.convention(true)
-            val location: Property<Directory> = offlinsCoverageReport.location.convention(baseReportDir.dir(name))
-            required.set(reportEnabled)
-            outputLocation.set(location)
+    private fun configureReports() {
+        val sourceReports = reportsExtension.get()
+        with(reports.csv) {
+            required.set(sourceReports.csv.enabled)
+            outputLocation.set(sourceReports.csv.location)
+        }
+        with(reports.xml) {
+            required.set(sourceReports.xml.enabled)
+            outputLocation.set(sourceReports.xml.location)
+        }
+        with(reports.html) {
+            required.set(sourceReports.html.enabled)
+            outputLocation.set(sourceReports.html.location)
         }
     }
 
-    private fun configureFileReport(
-        baseReportDir: DirectoryProperty,
-        offlinsCoverageFileReport: CoverageFileReport,
-        jacocoReport: SingleFileReport
-    ) {
-        val reportEnabled: Property<Boolean> = offlinsCoverageFileReport.enabled.convention(false)
-        val defaultReportFileName = "$name.${jacocoReport.name}"
-        val reportLocation: Property<RegularFile> = offlinsCoverageFileReport.location
-            .convention(baseReportDir.file(defaultReportFileName))
-        jacocoReport.required.set(reportEnabled)
-        jacocoReport.outputLocation.set(reportLocation)
+    private fun Property<ReportsExtension>.logReportConfiguration(
+        type: String,
+        reportGetter: ReportsExtension.() -> AbstractReport<*>,
+    ) = with(get().reportGetter()) {
+        logger.info(
+            "[{}] Report enabled={}, location={}",
+            type,
+            enabled.get(),
+            location.get().asFile,
+        )
+    }
+
+    private fun buildFilteredClassesCollection(): FileCollection {
+        val classesDir: Provider<Directory> = project.getMainSourceSetClassFilesDir()
+        val existingClasses: FileCollection = project.files(classesDir).filter { it.exists() }
+        return SourceFilter.build(reportsExtension.get())
+            .filter(existingClasses)
     }
 
     @Inject
@@ -111,7 +126,6 @@ open class OfflinsJacocoReport : DefaultTask() {
     }
 
     companion object {
-        const val RELATIVE_REPORT_DIR = "reports/jacoco"
         const val GENERATE_JACOCO_REPORTS_TASK = "coverageReport"
     }
 

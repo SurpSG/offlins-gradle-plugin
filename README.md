@@ -74,6 +74,14 @@ configure<io.github.surpsg.offlins.OfflinsExtension> {
 
         csv.enabled.set(true) // Optional. By default `false`
         csv.location.set(project.file("build/custom/csvCoverage.csv")) // Optional. By default `build/reports/jacoco/coverageReport.csv`    
+
+        // Optional. By default `emptyList()`
+        excludeClasses.set(
+          listOf(
+            "**/path/to/*/ExcludedClass*", 
+            "**/ExcludedClass2.class"
+          )
+        ) 
     }
 }
 ```
