@@ -1,5 +1,5 @@
 [libraries]
-apache-commons-io = { module = "commons-io:commons-io", version = "2.11.0" }
+apache-commons-io = { module = "commons-io:commons-io", version = "2.18.0" }
 
 [plugins]
 detekt = { id = "io.gitlab.arturbosch.detekt", version = "1.23.7" }

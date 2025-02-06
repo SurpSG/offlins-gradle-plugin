@@ -1,3 +1,10 @@
+[versions]
+kotestVer = "5.9.1"
+
 [libraries]
-assertj-core = { module = "org.assertj:assertj-core", version = "3.23.1" }
+assertj-core = { module = "org.assertj:assertj-core", version = "3.27.3" }
 jacoco-core = { module = "org.jacoco:org.jacoco.core", version = "0.8.12" }
+mockk = { module = "io.mockk:mockk", version = "1.13.16" }
+kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotestVer" }
+kotestAssertions = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotestVer" }
+kotestProperty = { module = "io.kotest:kotest-property-jvm", version.ref = "kotestVer" }

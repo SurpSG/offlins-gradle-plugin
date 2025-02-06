@@ -1,10 +1,6 @@
 package io.github.surpsg.offlins
 
-import org.gradle.kotlin.dsl.base
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.`java-gradle-plugin`
-import org.gradle.kotlin.dsl.`jvm-test-suite`
-import org.gradle.plugin.devel.GradlePluginDevelopmentExtension
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     base
@@ -19,6 +15,21 @@ testing.suites {
 
     val test by getting(JvmTestSuite::class) {
         useJUnitJupiter()
+
+        targets.all {
+            testTask.configure {
+                outputs.apply {
+                    upToDateWhen { false }
+                    cacheIf { false }
+                }
+
+                systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+                testLogging {
+                    events(TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.PASSED)
+                    showStandardStreams = true
+                }
+            }
+        }
     }
 }
 
