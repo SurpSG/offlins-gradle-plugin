@@ -54,9 +54,9 @@ plugins {
 All properties are **optional** but have the following defaults:
 
 * JaCoCo version `0.8.12`
-* *HTML* report is **enabled** with dafault path `build/reports/jacoco/html`
-* *XML* report is **disabled** with dafault path `build/reports/jacoco/coverageReport.xml`
-* *CSV* report is **disabled** with dafault path `build/reports/jacoco/coverageReport.csv`
+* *HTML* report is **disabled** with dafault path `build/reports/jacoco/html`
+* *XML* report is **disabled** with dafault path `build/reports/jacoco/report.xml`
+* *CSV* report is **disabled** with dafault path `build/reports/jacoco/report.csv`
 
 <details open>
 
