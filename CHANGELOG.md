@@ -1,6 +1,6 @@
 # Offlins Gradle plugin Changelog
 
-## <!-- NEXT RELEASE -->
+## 0.6.0
 - Added option to exclude classes from coverage report
 - Now html report is disabled by default
 - Now xml and csv reports have default names: report.xml and report.csv 
