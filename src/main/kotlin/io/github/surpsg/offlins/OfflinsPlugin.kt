@@ -113,10 +113,8 @@ class OfflinsPlugin : Plugin<Project> {
             OfflinsJacocoReport::class.java
         ) {
             it.project.log(msg = "Added task '${it.name}' to '${context.project.name}'")
-            it.execDataFiles.addAll(context.execFiles)
-            it.reportsExtension.set(context.project.provider {
-                context.offlinsExtension.report
-            })
+            it.execDataFiles.from(context.execFiles)
+            it.reportsExtension.set(context.offlinsExtension.report)
         }
     }
 

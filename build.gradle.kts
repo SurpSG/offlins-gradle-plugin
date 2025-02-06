@@ -1,6 +1,7 @@
 plugins {
     id("io.github.surpsg.offlins.gradle-plugin-conventions")
     alias(deps.plugins.detekt)
+    `java-test-fixtures`
 }
 
 repositories {
@@ -23,9 +24,14 @@ gradlePlugin {
 }
 
 dependencies {
-
     testImplementation(testDeps.assertj.core)
+
+    functionalTestImplementation(testFixtures(project))
     functionalTestImplementation(testDeps.assertj.core)
     functionalTestImplementation(testDeps.jacoco.core)
 
+    testFixturesApi(testDeps.kotestRunnerJunit5)
+    testFixturesApi(testDeps.kotestAssertions)
+    testFixturesApi(testDeps.kotestProperty)
+    testFixturesApi(testDeps.mockk)
 }
