@@ -1,5 +1,9 @@
 # Offlins Gradle plugin Changelog
 
+## 0.6.1
+- #64 Fixed dependency configuration on nested projects
+
+
 ## 0.6.0
 - Added option to exclude classes from coverage report
 - Now html report is disabled by default

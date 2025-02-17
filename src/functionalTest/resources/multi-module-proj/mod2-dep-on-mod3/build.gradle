@@ -2,5 +2,5 @@ plugins {
     id 'io.github.surpsg.offlins'
 }
 dependencies {
-    implementation(project(":mod3"))
+    implementation(project(":sub:mod3"))
 }

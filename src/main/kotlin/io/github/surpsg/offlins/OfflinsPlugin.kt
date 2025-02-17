@@ -56,8 +56,8 @@ class OfflinsPlugin : Plugin<Project> {
         val onProjectDeps: Set<Dependency> = getOnProjectDependencies(project).asSequence()
             .map { onProjDep ->
                 project.createOnProjectDependency(
-                    onProjDep.name,
-                    JACOCO_INSTRUMENTED_CONFIGURATION
+                    onProjDep.path,
+                    JACOCO_INSTRUMENTED_CONFIGURATION,
                 )
             }
             .toSet()
@@ -131,5 +131,4 @@ class OfflinsPlugin : Plugin<Project> {
         const val JACOCO_RUNTIME_CONFIGURATION = "jacocoRuntime"
         const val JACOCO_INSTRUMENTED_CONFIGURATION = "jacocoInstrumented"
     }
-
 }
