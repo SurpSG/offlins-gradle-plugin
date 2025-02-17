@@ -6,12 +6,12 @@ import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.plugins.JavaPlugin
 
 fun Project.createOnProjectDependency(
-    projectName: String,
+    projectPath: String,
     dependencyConfiguration: String
 ): Dependency {
     return dependencies.project(
         mapOf(
-            "path" to ":$projectName",
+            "path" to projectPath,
             "configuration" to dependencyConfiguration
         )
     )

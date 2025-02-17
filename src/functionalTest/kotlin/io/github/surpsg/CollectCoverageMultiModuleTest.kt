@@ -34,7 +34,7 @@ class CollectCoverageMultiModuleTest : BaseOfflinsTest() {
                 ClassCov("com/test/mod2/Module2", Covered.FULLY),
                 ClassCov("com/test/mod3/Module3", Covered.PARTIALLY)
             ),
-            "mod3" to arrayOf(
+            "sub/mod3" to arrayOf(
                 ClassCov("com/test/mod3/Module3", Covered.PARTIALLY)
             )
         ).forEach {
