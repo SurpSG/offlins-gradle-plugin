@@ -28,7 +28,7 @@ jobs:
       gradle_cmd: "./gradlew --parallel --build-cache --console=plain --no-watch-fs "
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
