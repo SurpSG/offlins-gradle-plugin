@@ -1,5 +1,5 @@
 [versions]
-kotestVer = "5.9.1"
+kotestVer = "6.2.5"
 
 [libraries]
 assertj-core = { module = "org.assertj:assertj-core", version = "3.27.7" }
